@@ -83,10 +83,10 @@ void line_stream::decode(int32_t asic_id, int32_t fpga_id, int32_t half_id) {
     // [Tc] [Tp][10b ADC][10b TOT] [10b TOA] (case 4 from the data sheet);
     for (int i = 0; i < 36; i++) {
         auto channel = channel_vec[i];
-        auto Tc = (channel >> 30) & 0x1;
-        auto Tp = (channel >> 29) & 0x1;
-        auto ADC = (channel >> 19) & 0x3FF;
-        auto TOT = (channel >> 9) & 0x3FF;
+        auto Tc = (channel >> 31) & 0x1;
+        auto Tp = (channel >> 30) & 0x1;
+        auto ADC = (channel >> 20) & 0x3FF;
+        auto TOT = (channel >> 10) & 0x3FF;
         auto TOA = channel & 0x3FF;
         // if (i == 0) {
         // if (ADC > 1) {
