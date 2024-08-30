@@ -265,7 +265,14 @@ void test_reading(int run) {
     // data_rates->SetMinimum(0);
     s->Register("/qa_plots/daq/", data_rates);
 
-    const char *fname = Form("/home/focal/code/H2GDAQ/dump/muonTest0/Run%03d.h2g", run);
+    auto dir = getenv("DATA_DIRECTORY");
+    if (dir == nullptr) {
+        std::cerr << "DATA_DIRECTORY not set!  Defaulting to current directory." << std::endl;
+        strcpy(dir, ".");
+        return;
+    }
+
+    const char *fname = Form("%s/Run%03d.h2g", dir, run);
     // const char *fname = "PhaseScanChannel16Phase2.txt";
     file_stream fs(fname);
     uint8_t buffer[PACKET_SIZE];
