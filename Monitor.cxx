@@ -268,6 +268,7 @@ void test_reading(int run) {
     auto dir = getenv("DATA_DIRECTORY");
     if (dir == nullptr) {
         std::cerr << "DATA_DIRECTORY not set!  Defaulting to current directory." << std::endl;
+        dir = new char[2];
         strcpy(dir, ".");
         return;
     }

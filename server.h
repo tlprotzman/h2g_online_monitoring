@@ -5,7 +5,7 @@
 
 class server {
 private:
-    server() {s = new THttpServer("http:12345");} // Private constructor to prevent direct instantiation
+    server(); // Private constructor to prevent direct instantiation
 
     server(const server&) = delete; // Prevent copy constructor
     server& operator=(const server&) = delete; // Prevent copy assignment
