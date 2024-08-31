@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <queue>
 
 #include <TH1.h>
 #include <TH2.h>
@@ -25,4 +26,15 @@ public:
     bool add_sample(uint32_t timestamp, uint32_t sample);
     bool is_complete() {return this->complete;}
     void fill_waveform(TH2 *waveform, TH1 *max);
+};
+
+typedef std::vector<std::vector<event*>> kcu_event;
+
+class event_builder {
+private:
+    std::queue<kcu_event> event_buffer;
+    
+public:
+    event_builder();
+    ~event_builder();
 };
