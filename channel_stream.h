@@ -1,5 +1,9 @@
 #pragma once
+
+#include "event_builder.h"
+
 #include <cstdint>
+
 #include <TH1.h>
 #include <TH2.h>
 #include <TCanvas.h>
@@ -11,6 +15,9 @@ private:
     int channel;
     long int packets_attempted;
     long int packets_complete;
+    long int events;
+
+    event *current_event;
 
     TCanvas *c;
 
@@ -23,13 +30,17 @@ private:
     TH2 *tot_per_channel;
     TH2 *toa_per_channel;
 
+    TH2 *adc_waveform;
+
 public:
     channel_stream(int fpga_id, int asic_id, int channel, TH2 *adc_per_channel, TH2 *tot_per_channel, TH2 *toa_per_channel);
     ~channel_stream();
+    void construct_event(uint32_t timestamp, uint32_t adc);
     void fill_readouts(uint32_t adc, uint32_t tot, uint32_t toa);
     void draw_adc() {adc_spectra->Draw();}
     void draw_tot() {tot_spectra->Draw();}
     void draw_toa() {toa_spectra->Draw();}
+    void draw_waveform() {adc_waveform->Draw("col");}
     int test = 42;
 };
 

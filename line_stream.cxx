@@ -53,14 +53,14 @@ void line_stream::add_line(line &l) {
     if (l.line_number == 4) {
         // Process the package
         // std::cout << "Found complete package!" << std::endl;
-        decode(l.asic_id, l.fpga_id, l.half_id);
+        decode(l.asic_id, l.fpga_id, l.half_id, l.timestamp);
         // Reset the package
         timestamp = 0;
         last_line_received = -1;
     }
 }
 
-void line_stream::decode(int32_t asic_id, int32_t fpga_id, int32_t half_id) {
+void line_stream::decode(int32_t asic_id, int32_t fpga_id, int32_t half_id, uint32_t timestamp) {
     // once we have received all 5 lines, we need to decode it
     auto header = package[0][0];
     auto cm = package[0][1];
@@ -93,6 +93,7 @@ void line_stream::decode(int32_t asic_id, int32_t fpga_id, int32_t half_id) {
         //     std::cout << "Channel " << i << " Tc: " << Tc << " Tp: " << Tp << " ADC: " << ADC << " TOT: " << TOT << " TOA: " << TOA << std::endl;
         // }
         // std::cerr << "trying to fill channel " << i << std::endl;
+        channels[fpga_id][asic_id][i + 36 * half_id]->construct_event(timestamp, ADC);
         channels[fpga_id][asic_id][i + 36 * half_id]->fill_readouts(ADC, TOT, TOA);
             // std::cout << "ADC: " << ADC << std::endl;
         // }

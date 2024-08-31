@@ -18,7 +18,7 @@ private:
     uint32_t **package;
     uint8_t last_line_received;
     channel_stream_vector channels;
-    void decode(int32_t asic_id, int32_t fpga_id, int32_t half_id);
+    void decode(int32_t asic_id, int32_t fpga_id, int32_t half_id, uint32_t timestamp);
 
 public:
     line_stream();

@@ -160,10 +160,13 @@ online_monitor::online_monitor() {
         canvas->Divide(1, 3, 0, 0);
         canvas->cd(1);
         adc_per_channel[i]->Draw("colz");
+        gPad->SetLogz();
         canvas->cd(2);
         tot_per_channel[i]->Draw("colz");
+        gPad->SetLogz();
         canvas->cd(3);
         toa_per_channel[i]->Draw("colz");
+        gPad->SetLogz();
     }
 
     for (int fpga = 0; fpga < NUM_FPGA; fpga++) {
@@ -177,7 +180,7 @@ online_monitor::online_monitor() {
                 // std::cout << "address of l: " << l << std::endl;
                 line_streams[fpga][asic].push_back(l);
             }
-            for (int channel = 0; channel < 144; channel++) {
+            for (int channel = 0; channel < 72; channel++) {
                 // std::cout << "asic here: " << asic << std::endl;
                 auto c = new channel_stream(fpga, asic, channel, adc_per_channel[fpga], tot_per_channel[fpga], toa_per_channel[fpga]);
                 // std::cout << "address of c: " << c << std::endl;
@@ -200,20 +203,30 @@ online_monitor::online_monitor() {
 
 
     // Set up canvases
-    uint32_t adc_canvas[NUM_FPGA];
+    uint32_t adc_canvas[NUM_FPGA * NUM_ASIC];
+    uint32_t waveform_canvas[NUM_FPGA * NUM_ASIC];
     for (int i = 0; i < NUM_FPGA; i++) {
-        adc_canvas[i] = canvases.new_canvas(Form("adc_canvas_%d", i), Form("ADC Spectra FPGA %d", i), 1200, 800);
-        auto c = canvases.get_canvas(adc_canvas[i]);
-        s->Register("/qa_plots/canvases", c);
-        // c->Divide(9, 8);
-        c->Divide(9, 8, 0, 0);
+        for (int j = 0; j < NUM_ASIC; j++) {
+            adc_canvas[i * NUM_ASIC + j] = canvases.new_canvas(Form("adc_fpga_%d_asic_%d", i, j), Form("ADC Spectra FPGA %d ASIC %d", i, j), 1200, 800);
+            auto c = canvases.get_canvas(adc_canvas[i * NUM_ASIC + j]);
+            s->Register("/qa_plots/canvases", c);
+            c->Divide(9, 8, 0, 0);
+            waveform_canvas[i * NUM_ASIC + j] = canvases.new_canvas(Form("waveform_fpga_%d_asic_%d", i, j), Form("Waveform FPGA %d ASIC %d", i, j), 1200, 800);
+            c = canvases.get_canvas(waveform_canvas[i * NUM_ASIC + j]);
+            s->Register("/qa_plots/canvases", c);
+            c->Divide(9, 8, 0, 0);
+        }
     }
     for (int fpga = 0; fpga < NUM_FPGA; fpga++) {
         for (int asic = 0; asic < NUM_ASIC; asic++) {
-            for (int channel = 0; channel < 144; channel++) {
-                auto c = canvases.get_canvas(adc_canvas[fpga]);
-                c->cd(32 * asic + channel + 1);
+            for (int channel = 0; channel < 72; channel++) {
+                auto c = canvases.get_canvas(adc_canvas[fpga * NUM_ASIC + asic]);
+                c->cd(channel + 1);
                 channels[fpga][asic][channel]->draw_adc();
+                c = canvases.get_canvas(waveform_canvas[fpga * NUM_ASIC + asic]);
+                c->cd(channel + 1);
+                channels[fpga][asic][channel]->draw_waveform();
+                gPad->SetLogz();
             }
         }
     }
@@ -282,17 +295,16 @@ void test_reading(int run) {
     for (int iteration = 0; iteration < 10000000; iteration++) {
 	s->ProcessRequests();
         if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_time).count() > 4) {
-	    fs.print_packet_numbers();
-	    std::cout << "Updating canvases...";
+            // fs.print_packet_numbers();
+            std::cout << "Updating canvases...";
             m->update_canvases();
             gSystem->ProcessEvents();
             start_time = std::chrono::high_resolution_clock::now();
-	    std::cout << " done!" << std::endl;
+            std::cout << " done!" << std::endl;
         }
         bool good_data = fs.read_packet(buffer);
-        if (!good_data
-        ) {
-	    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        if (!good_data) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             continue;
         }
         std::vector<line> lines(36);    // 36 lines per packet
@@ -310,7 +322,7 @@ void test_reading(int run) {
 }
 
 int Monitor(int run) {
-    // gStyle->SetOptStat(0);
+    gStyle->SetOptStat(0);
     // 
     // test_decoding();
     test_reading(run);
