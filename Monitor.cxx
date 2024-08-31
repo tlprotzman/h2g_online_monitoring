@@ -247,6 +247,52 @@ online_monitor::online_monitor() {
             }
         }
     }
+
+    int channel_map[72] = {63, 64, 65, 66, 70, 69, 68, 67, 
+                           55, 56, 57, 58, 62, 61, 60, 59,
+                           45, 46, 47, 48, 52, 51, 50, 49,
+                           36, 37, 38, 39, 43, 42, 41, 40,
+                           27, 28, 29, 30, 34, 33, 32, 31,
+                           19, 20, 21, 22, 26, 25, 24, 23,
+                            9, 10, 11, 12, 16, 15, 14, 13,
+                            0,  1,  2,  3,  7,  6,  5,  4};
+
+    uint32_t ordered_adc_canvas[config->NUM_FPGA * config->NUM_ASIC];
+    uint32_t ordered_waveform_canvas[config->NUM_FPGA * config->NUM_ASIC];
+    for (int i = 0; i < config->NUM_FPGA; i++) {
+        for (int j = 0; j < config->NUM_ASIC; j++) {
+            adc_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("ordered_adc_fpga_%d_asic_%d", i, j), Form("ADC Spectra FPGA %d ASIC %d", i, j), 1200, 800);
+            auto c = canvases.get_canvas(adc_canvas[i * config->NUM_ASIC + j]);
+            s->Register("/qa_plots/spatial", c);
+            c->Divide(8, 8, 0, 0);
+            waveform_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("ordered_waveform_fpga_%d_asic_%d", i, j), Form("Waveform FPGA %d ASIC %d", i, j), 1200, 800);
+            c = canvases.get_canvas(waveform_canvas[i * config->NUM_ASIC + j]);
+            s->Register("/qa_plots/spatial", c);
+            c->Divide(8, 8, 0, 0);
+        }
+    }
+    for (int fpga = 0; fpga < config->NUM_FPGA; fpga++) {
+        for (int asic = 0; asic < config->NUM_ASIC; asic++) {
+            for (int channel = 0; channel < 64; channel++) {
+                auto c = canvases.get_canvas(adc_canvas[fpga * config->NUM_ASIC + asic]);
+                c->cd(channel + 1);
+                channels[fpga][asic][channel_map[channel]]->draw_adc();
+                text->SetTextAlign(33);
+                text->DrawLatexNDC(0.95, 0.95, Form("FPGA %d", fpga));
+                text->DrawLatexNDC(0.95, 0.82, Form("ASIC %d", asic));
+                text->DrawLatexNDC(0.95, 0.69, Form("Channel %d", channel_map[channel]));
+                gPad->SetLogy();
+                c = canvases.get_canvas(waveform_canvas[fpga * config->NUM_ASIC + asic]);
+                c->cd(channel + 1);
+                channels[fpga][asic][channel_map[channel]]->draw_waveform();
+                text->SetTextAlign(33);
+                text->DrawLatexNDC(0.95, 0.95, Form("FPGA %d", fpga));
+                text->DrawLatexNDC(0.95, 0.82, Form("ASIC %d", asic));
+                text->DrawLatexNDC(0.95, 0.69, Form("Channel %d", channel_map[channel]));
+                gPad->SetLogz();
+            }
+        }
+    }
 }
 
 void test_decoding() {
