@@ -4,5 +4,5 @@
 
 void RunMonitoring(int run = 4) {
     gSystem->Load("libMonitoring.so");
-    Monitor(run);
+    Monitor(run, "lfhcal_12sample.cfg");
 }

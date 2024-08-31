@@ -12,20 +12,22 @@ channel_stream::channel_stream(int fpga_id, int asic_id, int channel, TH2 *adc_p
     this->fpga_id = fpga_id;
     this->asic_id = asic_id;
     this->channel = channel;
+    auto config = configuration::get_instance();
     packets_attempted = 0;
     packets_complete = 0;
     events = 0;
     current_event = nullptr;
     // std::cout << "and here: " << asic_id << std::endl;
     
-    adc_spectra = new TH1D(Form("adc_spectra_%d_%d_%d", fpga_id, asic_id, channel), Form("ADC Spectra FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), MAX_ADC/2, 0, MAX_ADC);
-    tot_spectra = new TH1D(Form("tot_spectra_%d_%d_%d", fpga_id, asic_id, channel), Form("TOT Spectra FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), MAX_TOT/2, 0, MAX_TOT);
-    toa_spectra = new TH1D(Form("toa_spectra_%d_%d_%d", fpga_id, asic_id, channel), Form("TOA Spectra FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), MAX_TOA/2, 0, MAX_TOA);
+    adc_spectra = new TH1D(Form("adc_spectra_%d_%d_%d", fpga_id, asic_id, channel), Form("ADC Spectra FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), config->MAX_ADC/2, 0, config->MAX_ADC);
+    tot_spectra = new TH1D(Form("tot_spectra_%d_%d_%d", fpga_id, asic_id, channel), Form("TOT Spectra FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), config->MAX_TOT/2, 0, config->MAX_TOT);
+    toa_spectra = new TH1D(Form("toa_spectra_%d_%d_%d", fpga_id, asic_id, channel), Form("TOA Spectra FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), config->MAX_TOA/2, 0, config->MAX_TOA);
     adc_spectra->SetTitle("");
     tot_spectra->SetTitle("");
     toa_spectra->SetTitle("");
-
-    adc_waveform = new TH2D(Form("adc_waveform_%d_%d_%d", fpga_id, asic_id, channel), Form("ADC Waveform FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), MAX_SAMPLES, 0, MAX_SAMPLES, 1024, 0, MAX_ADC);
+    
+    std::cout << "the max samples is " << config->MAX_SAMPLES << std::endl;
+    adc_waveform = new TH2D(Form("adc_waveform_%d_%d_%d", fpga_id, asic_id, channel), Form("ADC Waveform FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), config->MAX_SAMPLES, 0, config->MAX_SAMPLES, 1024, 0, config->MAX_ADC);
     adc_waveform->SetTitle("");
 
     auto s = server::get_instance()->get_server();
@@ -49,7 +51,7 @@ channel_stream::~channel_stream() {
 
 void channel_stream::construct_event(uint32_t timestamp, uint32_t adc) {
     if (current_event == nullptr) {
-        current_event = new event(fpga_id, channel, events, MAX_SAMPLES);
+        current_event = new event(fpga_id, channel, events, configuration::get_instance()->MAX_SAMPLES);
     }
     auto success = current_event->add_sample(timestamp, adc);
     if (!success) {

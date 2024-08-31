@@ -7,8 +7,9 @@
 line_stream::line_stream() {
     // std::cout << "running constructor" << std::endl;
     uint32_t **test_package;
-    package = (uint32_t**)malloc(NUM_LINES * sizeof(uint32_t *));
-    for (int i = 0; i < NUM_LINES; i++) {
+    auto config = configuration::get_instance();
+    package = (uint32_t**)malloc(config->NUM_LINES * sizeof(uint32_t *));
+    for (int i = 0; i < config->NUM_LINES; i++) {
         package[i] = (uint32_t*)malloc(8 * sizeof(uint32_t));
         for (int j = 0; j < 8; j++) {
             package[i][j] = 0;
@@ -61,6 +62,7 @@ void line_stream::add_line(line &l) {
 }
 
 void line_stream::decode(int32_t asic_id, int32_t fpga_id, int32_t half_id, uint32_t timestamp) {
+    auto config = configuration::get_instance();
     // once we have received all 5 lines, we need to decode it
     auto header = package[0][0];
     auto cm = package[0][1];
@@ -68,7 +70,7 @@ void line_stream::decode(int32_t asic_id, int32_t fpga_id, int32_t half_id, uint
     auto crc_32 = package[4][7];
     int ch = 0;
     std::vector<uint32_t> channel_vec(36);
-    for (int i = 0; i < NUM_LINES; i++) {
+    for (int i = 0; i < config->NUM_LINES; i++) {
         for (int j = 0; j < 8; j++) {
             // Skip what we've already defined
             if ((i == 0 && j == 0) | (i == 0 && j == 1) | (i == 3 && j == 5) | (i == 4 && j == 7)) {

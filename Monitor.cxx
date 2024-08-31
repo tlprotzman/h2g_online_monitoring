@@ -147,10 +147,11 @@ public:
 online_monitor::online_monitor() {
     auto s = server::get_instance()->get_server();
     canvases = canvas_manager::get_instance();
-    for (int i = 0; i < NUM_FPGA; i++) {
-        adc_per_channel.push_back(new TH2D(Form("adc_per_channel_%d", i), Form("ADC per Channel FPGA %d", i), 144, 0, 144, 1024, 0, MAX_ADC));
-        tot_per_channel.push_back(new TH2D(Form("tot_per_channel_%d", i), Form("TOT per Channel FPGA %d", i), 144, 0, 144, 1024, 0, MAX_TOT));
-        toa_per_channel.push_back(new TH2D(Form("toa_per_channel_%d", i), Form("TOA per Channel FPGA %d", i), 144, 0, 144, 1024, 0, MAX_TOA));
+    auto config = configuration::get_instance();
+    for (int i = 0; i < config->NUM_FPGA; i++) {
+        adc_per_channel.push_back(new TH2D(Form("adc_per_channel_%d", i), Form("ADC per Channel FPGA %d", i), 144, 0, 144, 1024, 0, config->MAX_ADC));
+        tot_per_channel.push_back(new TH2D(Form("tot_per_channel_%d", i), Form("TOT per Channel FPGA %d", i), 144, 0, 144, 1024, 0, config->MAX_TOT));
+        toa_per_channel.push_back(new TH2D(Form("toa_per_channel_%d", i), Form("TOA per Channel FPGA %d", i), 144, 0, 144, 1024, 0, config->MAX_TOA));
         s->Register("/qa_plots/graphs/adc", adc_per_channel.back());
         s->Register("/qa_plots/graphs/tot", tot_per_channel.back());
         s->Register("/qa_plots/graphs/toa", toa_per_channel.back());
@@ -172,10 +173,10 @@ online_monitor::online_monitor() {
 
 
 
-    for (int fpga = 0; fpga < NUM_FPGA; fpga++) {
+    for (int fpga = 0; fpga < config->NUM_FPGA; fpga++) {
         line_streams.push_back(std::vector<std::vector<line_stream*>>());
         channels.push_back(std::vector<std::vector<channel_stream*>>());
-        for (int asic = 0; asic < NUM_ASIC; asic++) {
+        for (int asic = 0; asic < config->NUM_ASIC; asic++) {
             line_streams[fpga].push_back(std::vector<line_stream*>());
             channels[fpga].push_back(std::vector<channel_stream*>());
             for (int half = 0; half < 2; half++) {
@@ -210,24 +211,24 @@ online_monitor::online_monitor() {
     
 
     // Set up canvases
-    uint32_t adc_canvas[NUM_FPGA * NUM_ASIC];
-    uint32_t waveform_canvas[NUM_FPGA * NUM_ASIC];
-    for (int i = 0; i < NUM_FPGA; i++) {
-        for (int j = 0; j < NUM_ASIC; j++) {
-            adc_canvas[i * NUM_ASIC + j] = canvases.new_canvas(Form("adc_fpga_%d_asic_%d", i, j), Form("ADC Spectra FPGA %d ASIC %d", i, j), 1200, 800);
-            auto c = canvases.get_canvas(adc_canvas[i * NUM_ASIC + j]);
+    uint32_t adc_canvas[config->NUM_FPGA * config->NUM_ASIC];
+    uint32_t waveform_canvas[config->NUM_FPGA * config->NUM_ASIC];
+    for (int i = 0; i < config->NUM_FPGA; i++) {
+        for (int j = 0; j < config->NUM_ASIC; j++) {
+            adc_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("adc_fpga_%d_asic_%d", i, j), Form("ADC Spectra FPGA %d ASIC %d", i, j), 1200, 800);
+            auto c = canvases.get_canvas(adc_canvas[i * config->NUM_ASIC + j]);
             s->Register("/qa_plots/canvases", c);
             c->Divide(9, 8, 0, 0);
-            waveform_canvas[i * NUM_ASIC + j] = canvases.new_canvas(Form("waveform_fpga_%d_asic_%d", i, j), Form("Waveform FPGA %d ASIC %d", i, j), 1200, 800);
-            c = canvases.get_canvas(waveform_canvas[i * NUM_ASIC + j]);
+            waveform_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("waveform_fpga_%d_asic_%d", i, j), Form("Waveform FPGA %d ASIC %d", i, j), 1200, 800);
+            c = canvases.get_canvas(waveform_canvas[i * config->NUM_ASIC + j]);
             s->Register("/qa_plots/canvases", c);
             c->Divide(9, 8, 0, 0);
         }
     }
-    for (int fpga = 0; fpga < NUM_FPGA; fpga++) {
-        for (int asic = 0; asic < NUM_ASIC; asic++) {
+    for (int fpga = 0; fpga < config->NUM_FPGA; fpga++) {
+        for (int asic = 0; asic < config->NUM_ASIC; asic++) {
             for (int channel = 0; channel < 72; channel++) {
-                auto c = canvases.get_canvas(adc_canvas[fpga * NUM_ASIC + asic]);
+                auto c = canvases.get_canvas(adc_canvas[fpga * config->NUM_ASIC + asic]);
                 c->cd(channel + 1);
                 channels[fpga][asic][channel]->draw_adc();
                 text->SetTextAlign(33);
@@ -235,13 +236,13 @@ online_monitor::online_monitor() {
                 text->DrawLatexNDC(0.95, 0.82, Form("ASIC %d", asic));
                 text->DrawLatexNDC(0.95, 0.69, Form("Channel %d", channel));
                 gPad->SetLogy();
-                c = canvases.get_canvas(waveform_canvas[fpga * NUM_ASIC + asic]);
+                c = canvases.get_canvas(waveform_canvas[fpga * config->NUM_ASIC + asic]);
                 c->cd(channel + 1);
                 channels[fpga][asic][channel]->draw_waveform();
-                text->SetTextAlign(13);
-                text->DrawLatexNDC(0.12, 0.95, Form("FPGA %d", fpga));
-                text->DrawLatexNDC(0.12, 0.82, Form("ASIC %d", asic));
-                text->DrawLatexNDC(0.12, 0.69, Form("Channel %d", channel));
+                text->SetTextAlign(33);
+                text->DrawLatexNDC(0.95, 0.95, Form("FPGA %d", fpga));
+                text->DrawLatexNDC(0.95, 0.82, Form("ASIC %d", asic));
+                text->DrawLatexNDC(0.95, 0.69, Form("Channel %d", channel));
                 gPad->SetLogz();
             }
         }
@@ -249,11 +250,12 @@ online_monitor::online_monitor() {
 }
 
 void test_decoding() {
-    uint8_t line0[PACKET_SIZE] = {0xA0, 0x00, 0x24, 0x00, 0x01, 0x52, 0x71, 0x24, 0x5A, 0xB4, 0x15, 0x85, 0x00, 0x00, 0x80, 0x00, 0x05, 0xF0, 0x00, 0x00, 0x07, 0x40, 0x00, 0x00};
-    uint8_t line1[PACKET_SIZE] = {0xA0, 0x00, 0x24, 0x01, 0x01, 0x52, 0x71, 0x24, 0x5A, 0xB4, 0x15, 0x85, 0x00, 0x00, 0x80, 0x00, 0x05, 0xF0, 0x00, 0x00, 0x07, 0x40, 0x00, 0x00};
-    uint8_t line2[PACKET_SIZE] = {0xA0, 0x00, 0x24, 0x02, 0x01, 0x52, 0x71, 0x24, 0x5A, 0xB4, 0x15, 0x85, 0x00, 0x00, 0x80, 0x00, 0x05, 0xF0, 0x00, 0x00, 0x07, 0x40, 0x00, 0x00};
-    uint8_t line3[PACKET_SIZE] = {0xA0, 0x00, 0x24, 0x03, 0x01, 0x52, 0x71, 0x24, 0x5A, 0xB4, 0x15, 0x85, 0x00, 0x00, 0x80, 0x00, 0x05, 0xF0, 0x00, 0x00, 0x07, 0x40, 0x00, 0x00};
-    uint8_t line4[PACKET_SIZE] = {0xA0, 0x00, 0x24, 0x04, 0x01, 0x52, 0x71, 0x24, 0x5A, 0xB4, 0x15, 0x85, 0x00, 0x00, 0x80, 0x00, 0x05, 0xF0, 0x00, 0x00, 0x07, 0x40, 0x00, 0x00};
+    auto config = configuration::get_instance();
+    uint8_t line0[config->PACKET_SIZE] = {0xA0, 0x00, 0x24, 0x00, 0x01, 0x52, 0x71, 0x24, 0x5A, 0xB4, 0x15, 0x85, 0x00, 0x00, 0x80, 0x00, 0x05, 0xF0, 0x00, 0x00, 0x07, 0x40, 0x00, 0x00};
+    uint8_t line1[config->PACKET_SIZE] = {0xA0, 0x00, 0x24, 0x01, 0x01, 0x52, 0x71, 0x24, 0x5A, 0xB4, 0x15, 0x85, 0x00, 0x00, 0x80, 0x00, 0x05, 0xF0, 0x00, 0x00, 0x07, 0x40, 0x00, 0x00};
+    uint8_t line2[config->PACKET_SIZE] = {0xA0, 0x00, 0x24, 0x02, 0x01, 0x52, 0x71, 0x24, 0x5A, 0xB4, 0x15, 0x85, 0x00, 0x00, 0x80, 0x00, 0x05, 0xF0, 0x00, 0x00, 0x07, 0x40, 0x00, 0x00};
+    uint8_t line3[config->PACKET_SIZE] = {0xA0, 0x00, 0x24, 0x03, 0x01, 0x52, 0x71, 0x24, 0x5A, 0xB4, 0x15, 0x85, 0x00, 0x00, 0x80, 0x00, 0x05, 0xF0, 0x00, 0x00, 0x07, 0x40, 0x00, 0x00};
+    uint8_t line4[config->PACKET_SIZE] = {0xA0, 0x00, 0x24, 0x04, 0x01, 0x52, 0x71, 0x24, 0x5A, 0xB4, 0x15, 0x85, 0x00, 0x00, 0x80, 0x00, 0x05, 0xF0, 0x00, 0x00, 0x07, 0x40, 0x00, 0x00};
 
     line p0;
     line p1;
@@ -305,7 +307,7 @@ void test_reading(int run) {
     const char *fname = Form("%s/Run%03d.h2g", dir, run);
     // const char *fname = "PhaseScanChannel16Phase2.txt";
     file_stream fs(fname);
-    uint8_t buffer[PACKET_SIZE];
+    uint8_t buffer[configuration::get_instance()->PACKET_SIZE];
     // for (int iteration = 0; iteration < 50; iteration++) {
     // for (int iteration = 0; iteration < 61100; iteration++) {
     for (int iteration = 0; iteration < 10000000; iteration++) {
@@ -337,16 +339,18 @@ void test_reading(int run) {
     }
 }
 
-int Monitor(int run) {
+int Monitor(int run, std::string config_file) {
     gStyle->SetOptStat(0);
     // 
     // test_decoding();
+    load_configs(config_file);
+    print_configs();
     test_reading(run);
     return 0;
 }
 
 int main() {
     TApplication app("app", 0, nullptr);
-    Monitor(42);  // answer to the universe
+    Monitor(42, "");  // answer to the universe
     return 0;
 }

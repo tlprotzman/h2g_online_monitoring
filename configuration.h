@@ -1,15 +1,38 @@
 #pragma once
 
-// Define the run configurations
-const int NUM_FPGA = 4;
-const int NUM_ASIC = 2;
-const int NUM_CHANNELS = 80;
-const int NUM_LINES = 5;
+#include <string>
 
-const int MAX_SAMPLES = 20;
-const int MACHINE_GUN_MAX_TIME = 1000;  // TODO What is the actual timing supposed to be 
-const int MAX_ADC = 1 << 10;
-const int MAX_TOT = 1 << 10;
-const int MAX_TOA = 1 << 10;
+class configuration {
+private:
+    configuration() {};
+    configuration(const configuration&) = delete;
+    configuration& operator=(const configuration&) = delete;
 
-const int PACKET_SIZE = 1452;
+    static configuration *instance;
+
+public:
+    static configuration* get_instance() {
+        if (instance == nullptr) {
+            instance = new configuration();
+        }
+        return instance;
+    }
+
+    int NUM_FPGA = 4;
+    int NUM_ASIC = 2;
+    int NUM_CHANNELS = 80;
+    int NUM_LINES = 5;
+
+    int MAX_SAMPLES = 20;
+    int MACHINE_GUN_MAX_TIME = 1000;  // TODO What is the actual timing supposed to be 
+    int MAX_ADC = 1 << 10;
+    int MAX_TOT = 1 << 10;
+    int MAX_TOA = 1 << 10;
+
+    int PACKET_SIZE = 1452;
+
+};
+
+
+void load_configs(std::string config_file);
+void print_configs();

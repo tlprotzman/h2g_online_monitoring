@@ -1,3 +1,5 @@
 #pragma once
 
-int Monitor(int run);
+#include <string>
+
+int Monitor(int run, std::string config_file);

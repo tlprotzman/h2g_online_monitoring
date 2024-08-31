@@ -21,7 +21,7 @@ public:
     event(uint32_t fpga_id, uint32_t channel, uint32_t event_id, uint32_t expected_samples);
     ~event();
 
+    bool add_sample(uint32_t timestamp, uint32_t sample);
     bool is_complete() {return this->complete;}
     void fill_waveform(TH2 *waveform);
-    bool add_sample(uint32_t timestamp, uint32_t sample);
 };

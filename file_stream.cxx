@@ -14,9 +14,22 @@
 
 
 file_stream::file_stream(const char *fname) {
+    auto config = configuration::get_instance();    
+    current_packet = new uint16_t[config->NUM_FPGA];
+    missed_packets = new uint32_t[config->NUM_FPGA];
+    total_packets = new uint32_t[config->NUM_FPGA];
+    canvas_id = new int[config->NUM_FPGA];
+    first_packet = new bool[config->NUM_FPGA];
+    recieved_packet_graphs = new TGraph*[config->NUM_FPGA];
+    missed_packet_graphs = new TGraph*[config->NUM_FPGA];
+    missed_packet_graphs_percent = new TGraph*[config->NUM_FPGA];
+    mg = new TMultiGraph*[config->NUM_FPGA];
+
+
+
     auto canvases = canvas_manager::get_instance();
     auto s = server::get_instance()->get_server();
-    for (int i = 0; i < NUM_FPGA; i++) {
+    for (int i = 0; i < config->NUM_FPGA; i++) {
         current_packet[i] = 0;
         missed_packets[i] = 0;
         total_packets[i] = 0;
@@ -88,10 +101,25 @@ file_stream::file_stream(const char *fname) {
 file_stream::~file_stream() {
     file.close();
     print_packet_numbers();
+    for (int i = 0; i < configuration::get_instance()->NUM_FPGA; i++) {
+        delete recieved_packet_graphs[i];
+        delete missed_packet_graphs[i];
+        delete missed_packet_graphs_percent[i];
+        delete mg[i];
+    }
+    delete[] current_packet;
+    delete[] missed_packets;
+    delete[] total_packets;
+    delete[] canvas_id;
+    delete[] first_packet;
+    delete[] recieved_packet_graphs;
+    delete[] missed_packet_graphs;
+    delete[] missed_packet_graphs_percent;
+    delete[] mg;
 }
 
 void file_stream::print_packet_numbers() {
-    for (int i = 0; i < NUM_FPGA; i++) {
+    for (int i = 0; i < configuration::get_instance()->NUM_FPGA; i++) {
         // std::cout << "FPGA " << i << std::endl;
         // std::cout << "\tTotal packets: " << total_packets[i] << std::endl;
         // std::cout << "\tMissed packets: " << missed_packets[i] << std::endl;
@@ -108,10 +136,11 @@ void file_stream::print_packet_numbers() {
 }
 
 bool file_stream::read_packet(uint8_t *buffer) {
+    auto config = configuration::get_instance();
     // Check if PACKET_SIZE bytes are available to read
     // std::cout << "trying to read from " << file.tellg() << std::endl;
     file.seekg(0, std::ios::end);
-    if (file.tellg() - current_head < PACKET_SIZE) {
+    if (file.tellg() - current_head < config->PACKET_SIZE) {
         // std::cerr << "Not enough bytes available to read line" << std::endl;
         file.seekg(current_head, std::ios::beg);
         return false;
@@ -119,7 +148,7 @@ bool file_stream::read_packet(uint8_t *buffer) {
     file.seekg(current_head, std::ios::beg);
     // file.seekg(-1 * PACKET_SIZE, std::ios::cur);
     // std::cout << "Reading from " << current_head << std::endl;
-    file.read(reinterpret_cast<char*>(buffer), PACKET_SIZE);;
+    file.read(reinterpret_cast<char*>(buffer), config->PACKET_SIZE);;
     current_head = file.tellg();
     if (file.rdstate() & std::ifstream::failbit || file.rdstate() & std::ifstream::badbit) {
 	if (std::ifstream::failbit) {

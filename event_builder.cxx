@@ -22,6 +22,7 @@ event::~event() {
 }
 
 bool event::add_sample(uint32_t timestamp, uint32_t sample) {
+    auto config = configuration::get_instance();
     // Make sure the event isn't already complete
     if (this->found_samples >= this->expected_samples) {
         return false;
@@ -32,7 +33,7 @@ bool event::add_sample(uint32_t timestamp, uint32_t sample) {
         uint32_t last_timestamp = this->timestamps[this->found_samples - 1];
         uint32_t time_diff = timestamp - last_timestamp;
 
-        if (time_diff > MACHINE_GUN_MAX_TIME) {
+        if (time_diff > config->MACHINE_GUN_MAX_TIME) {
             this->found_samples = 0;
             return false;
         }
