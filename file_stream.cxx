@@ -92,10 +92,10 @@ file_stream::~file_stream() {
 
 void file_stream::print_packet_numbers() {
     for (int i = 0; i < NUM_FPGA; i++) {
-        std::cout << "FPGA " << i << std::endl;
-        std::cout << "\tTotal packets: " << total_packets[i] << std::endl;
-        std::cout << "\tMissed packets: " << missed_packets[i] << std::endl;
-        std::cout << "\tMissed packet rate: " << (double)missed_packets[i] / total_packets[i] << std::endl;
+        // std::cout << "FPGA " << i << std::endl;
+        // std::cout << "\tTotal packets: " << total_packets[i] << std::endl;
+        // std::cout << "\tMissed packets: " << missed_packets[i] << std::endl;
+        // std::cout << "\tMissed packet rate: " << (double)missed_packets[i] / total_packets[i] << std::endl;
         auto time = TDatime();
         recieved_packet_graphs[i]->SetPoint(recieved_packet_graphs[i]->GetN(), time.Convert(), total_packets[i]);
         recieved_packet_graphs[i]->GetYaxis()->SetRangeUser(0, 1.2 * (float)total_packets[i]);

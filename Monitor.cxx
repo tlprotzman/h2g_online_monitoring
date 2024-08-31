@@ -20,6 +20,7 @@ Tristan Protzman, 27-08-2024
 #include <TApplication.h>
 #include <TSystem.h>
 #include <TStyle.h>
+#include <TLatex.h>
 #include <THttpServer.h>
 
 #include <vector>
@@ -169,6 +170,8 @@ online_monitor::online_monitor() {
         gPad->SetLogz();
     }
 
+
+
     for (int fpga = 0; fpga < NUM_FPGA; fpga++) {
         line_streams.push_back(std::vector<std::vector<line_stream*>>());
         channels.push_back(std::vector<std::vector<channel_stream*>>());
@@ -201,6 +204,10 @@ online_monitor::online_monitor() {
         }
     }
 
+    auto text = new TLatex();
+    text->SetTextSize(0.12);
+    text->SetTextFont(42);
+    
 
     // Set up canvases
     uint32_t adc_canvas[NUM_FPGA * NUM_ASIC];
@@ -223,9 +230,18 @@ online_monitor::online_monitor() {
                 auto c = canvases.get_canvas(adc_canvas[fpga * NUM_ASIC + asic]);
                 c->cd(channel + 1);
                 channels[fpga][asic][channel]->draw_adc();
+                text->SetTextAlign(33);
+                text->DrawLatexNDC(0.95, 0.95, Form("FPGA %d", fpga));
+                text->DrawLatexNDC(0.95, 0.82, Form("ASIC %d", asic));
+                text->DrawLatexNDC(0.95, 0.69, Form("Channel %d", channel));
+                gPad->SetLogy();
                 c = canvases.get_canvas(waveform_canvas[fpga * NUM_ASIC + asic]);
                 c->cd(channel + 1);
                 channels[fpga][asic][channel]->draw_waveform();
+                text->SetTextAlign(13);
+                text->DrawLatexNDC(0.12, 0.95, Form("FPGA %d", fpga));
+                text->DrawLatexNDC(0.12, 0.82, Form("ASIC %d", asic));
+                text->DrawLatexNDC(0.12, 0.69, Form("Channel %d", channel));
                 gPad->SetLogz();
             }
         }
@@ -295,7 +311,7 @@ void test_reading(int run) {
     for (int iteration = 0; iteration < 10000000; iteration++) {
 	s->ProcessRequests();
         if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_time).count() > 4) {
-            // fs.print_packet_numbers();
+            fs.print_packet_numbers();
             std::cout << "Updating canvases...";
             m->update_canvases();
             gSystem->ProcessEvents();

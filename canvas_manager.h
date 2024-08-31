@@ -20,7 +20,7 @@ private:
     std::vector<TCanvas*> canvases;
 
 public:
-    canvas_manager() { std::cout << "running constructor?" << std::endl; };
+    canvas_manager() {};
     canvas_manager(const canvas_manager&) {};
     ~canvas_manager() {};
     void operator=(const canvas_manager&) {};

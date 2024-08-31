@@ -5,7 +5,7 @@
 #include <iostream>
 
 line_stream::line_stream() {
-    std::cout << "running constructor" << std::endl;
+    // std::cout << "running constructor" << std::endl;
     uint32_t **test_package;
     package = (uint32_t**)malloc(NUM_LINES * sizeof(uint32_t *));
     for (int i = 0; i < NUM_LINES; i++) {
