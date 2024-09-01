@@ -30,7 +30,13 @@ Tristan Protzman, 27-08-2024
 #include <unistd.h>
 #include <chrono>
 #include <thread>
+#include <csignal>
 
+// catch ctrl-c
+bool stop = false;
+void signal_handler(int signal) {
+    stop = true;
+}
 
 int decode_fpga(int fpga_id) {
     return fpga_id;
@@ -124,6 +130,7 @@ void process_lines(std::vector<line> &lines, line_stream_vector &streams, TH1 *d
 
 class online_monitor {
 private:
+    int run_number;
     canvas_manager canvases;
 
     std::vector<TH2*> adc_per_channel;
@@ -145,6 +152,7 @@ public:
 };
 
 online_monitor::online_monitor(int run_number) {
+    this->run_number = run_number;
     auto s = server::get_instance()->get_server();
     canvases = canvas_manager::get_instance();
     auto config = configuration::get_instance();
@@ -317,6 +325,10 @@ online_monitor::online_monitor(int run_number) {
     }
 }
 
+online_monitor::~online_monitor() {
+    canvases.save_all(run_number);
+}
+
 void test_decoding() {
     auto config = configuration::get_instance();
     uint8_t line0[config->PACKET_SIZE] = {0xA0, 0x00, 0x24, 0x00, 0x01, 0x52, 0x71, 0x24, 0x5A, 0xB4, 0x15, 0x85, 0x00, 0x00, 0x80, 0x00, 0x05, 0xF0, 0x00, 0x00, 0x07, 0x40, 0x00, 0x00};
@@ -379,7 +391,10 @@ void test_reading(int run) {
     // for (int iteration = 0; iteration < 50; iteration++) {
     // for (int iteration = 0; iteration < 61100; iteration++) {
     for (int iteration = 0; iteration < 10000000; iteration++) {
-	s->ProcessRequests();
+        if (stop) {
+            break;
+        }
+        s->ProcessRequests();
         if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_time).count() > 4) {
             fs.print_packet_numbers();
             std::cout << "Updating canvases...";
@@ -405,9 +420,14 @@ void test_reading(int run) {
         // }
         // std::cout << std::endl << std::endl << std::endl;;
     }
+    delete m;
+    std::cout << "Exiting cleanly, just for you Fredi!" << std::endl;
 }
 
 int Monitor(int run, std::string config_file) {
+    // register signal handler
+    signal(SIGINT, signal_handler);
+
     gStyle->SetOptStat(0);
     // 
     // test_decoding();
