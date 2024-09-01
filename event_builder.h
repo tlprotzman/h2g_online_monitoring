@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include <TH1.h>
 #include <TH2.h>
 
 class event {
@@ -23,5 +24,5 @@ public:
 
     bool add_sample(uint32_t timestamp, uint32_t sample);
     bool is_complete() {return this->complete;}
-    void fill_waveform(TH2 *waveform);
+    void fill_waveform(TH2 *waveform, TH1 *max);
 };

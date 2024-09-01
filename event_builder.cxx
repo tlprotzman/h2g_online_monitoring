@@ -50,8 +50,14 @@ bool event::add_sample(uint32_t timestamp, uint32_t sample) {
     return true;
 }
 
-void event::fill_waveform(TH2 *waveform) {
+void event::fill_waveform(TH2 *waveform, TH1 *max) {
+    int max_sample =0;
+    int pedestal = samples[0];
     for (int i = 0; i < this->found_samples; i++) {
         waveform->Fill(i, this->samples[i]);
+        if (this->samples[i] > max_sample) {
+            max_sample = this->samples[i];
+        }
     }
+    max->Fill(max_sample - pedestal);
 }

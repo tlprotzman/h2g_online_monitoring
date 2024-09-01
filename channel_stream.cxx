@@ -30,6 +30,8 @@ channel_stream::channel_stream(int fpga_id, int asic_id, int channel, TH2 *adc_p
     adc_waveform = new TH2D(Form("adc_waveform_%d_%d_%d", fpga_id, asic_id, channel), Form("ADC Waveform FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), config->MAX_SAMPLES, 0, config->MAX_SAMPLES, 1024, 0, config->MAX_ADC);
     adc_waveform->SetTitle("");
 
+    adc_max = new TH1D(Form("adc_max_%d_%d_%d", fpga_id, asic_id, channel), Form("ADC Max FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), 1024, 0, config->MAX_ADC);
+
     auto s = server::get_instance()->get_server();
     s->Register(Form("/qa_plots/graphs/individual/fpga%d/adc", fpga_id), adc_spectra);
     s->Register(Form("/qa_plots/graphs/individual/fpga%d/tot", fpga_id), tot_spectra);
@@ -37,6 +39,7 @@ channel_stream::channel_stream(int fpga_id, int asic_id, int channel, TH2 *adc_p
 
     // s->Register(Form("/qa_plots/graphs/individual/fpga%d/adc_waveform", fpga_id), adc_waveform);
     s->Register(Form("/qa_plots/test/fpga%d/adc_waveform", fpga_id), adc_waveform);
+    s->Register(Form("/qa_plots/test/fpga%d/adc_max", fpga_id), adc_max);
 
     this->adc_per_channel = adc_per_channel;
     this->tot_per_channel = tot_per_channel;
@@ -62,7 +65,7 @@ void channel_stream::construct_event(uint32_t timestamp, uint32_t adc) {
     }
     if (current_event->is_complete()) {
         // std::cout << "Event complete!" << std::endl;
-        current_event->fill_waveform(adc_waveform);
+        current_event->fill_waveform(adc_waveform, adc_max);
         delete current_event;
         current_event = nullptr;
         events++;

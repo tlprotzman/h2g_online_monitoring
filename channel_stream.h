@@ -31,6 +31,7 @@ private:
     TH2 *toa_per_channel;
 
     TH2 *adc_waveform;
+    TH1 *adc_max;
 
 public:
     channel_stream(int fpga_id, int asic_id, int channel, TH2 *adc_per_channel, TH2 *tot_per_channel, TH2 *toa_per_channel);
@@ -41,6 +42,7 @@ public:
     void draw_tot() {tot_spectra->Draw();}
     void draw_toa() {toa_spectra->Draw();}
     void draw_waveform() {adc_waveform->Draw("col");}
+    void draw_max() {adc_max->Draw();}
     int test = 42;
 };
 
