@@ -1,5 +1,5 @@
-#include "line_stream.h"
 
+#include "line_stream.h"
 #include "configuration.h"
 
 #include <iostream>
@@ -90,6 +90,17 @@ void line_stream::decode(int32_t asic_id, int32_t fpga_id, int32_t half_id, uint
         auto ADC = (channel >> 20) & 0x3FF;
         auto TOT = (channel >> 10) & 0x3FF;
         auto TOA = channel & 0x3FF;
+
+        // TOT Decoder
+        // TOT is a 12 bit counter, but gets sent as a 10 bit number
+        // If the most significant bit is 1, then the lower two bits were dropped
+        if (TOT & 0x200) {
+            // std::cout << "shifting tot" << std::endl;
+            TOT = TOT & 0b0111111111;
+            TOT = TOT << 3;
+        } else {
+            // std::cout << "not shifting tot" << std::endl;
+        }
         // if (i == 0) {
         // if (ADC > 1) {
         //     std::cout << "Channel " << i << " Tc: " << Tc << " Tp: " << Tp << " ADC: " << ADC << " TOT: " << TOT << " TOA: " << TOA << std::endl;

@@ -26,7 +26,7 @@ channel_stream::channel_stream(int fpga_id, int asic_id, int channel, TH2 *adc_p
     tot_spectra->SetTitle("");
     toa_spectra->SetTitle("");
     
-    std::cout << "the max samples is " << config->MAX_SAMPLES << std::endl;
+    // std::cout << "the max samples is " << config->MAX_SAMPLES << std::endl;
     adc_waveform = new TH2D(Form("adc_waveform_%d_%d_%d", fpga_id, asic_id, channel), Form("ADC Waveform FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), config->MAX_SAMPLES, 0, config->MAX_SAMPLES, 1024, 0, config->MAX_ADC);
     adc_waveform->SetTitle("");
 

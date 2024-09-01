@@ -26,7 +26,7 @@ public:
     int MAX_SAMPLES = 20;
     int MACHINE_GUN_MAX_TIME = 1000;  // TODO What is the actual timing supposed to be 
     int MAX_ADC = 1 << 10;
-    int MAX_TOT = 1 << 10;
+    int MAX_TOT = 1 << 12;
     int MAX_TOA = 1 << 10;
 
     int PACKET_SIZE = 1452;
