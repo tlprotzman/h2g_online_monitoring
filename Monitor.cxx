@@ -254,10 +254,10 @@ online_monitor::online_monitor(int run_number) {
                            55, 56, 57, 58, 62, 61, 60, 59,
                            45, 46, 47, 48, 52, 51, 50, 49,
                            36, 37, 38, 39, 43, 42, 41, 40,
-                           27, 28, 29, 30, 34, 33, 32, 31,
-                           19, 20, 21, 22, 26, 25, 24, 23,
-                            9, 10, 11, 12, 16, 15, 14, 13,
-                            0,  1,  2,  3,  7,  6,  5,  4};
+                           34, 33, 32, 31, 27, 28, 29, 30,
+                           26, 25, 24, 23, 19, 20, 21, 22,
+                           16, 15, 14, 13,  9, 10, 11, 12,
+                            7,  6,  3,  4,  0,  1,  2,  3};
 
     uint32_t ordered_adc_canvas[config->NUM_FPGA * config->NUM_ASIC];
     uint32_t ordered_waveform_canvas[config->NUM_FPGA * config->NUM_ASIC];
@@ -283,7 +283,7 @@ online_monitor::online_monitor(int run_number) {
                 text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
                 text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
                 text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
-                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel));
+                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_map[channel]));
                 gPad->SetLogy();
                 c = canvases.get_canvas(waveform_canvas[fpga * config->NUM_ASIC + asic]);
                 c->cd(channel + 1);
@@ -292,7 +292,7 @@ online_monitor::online_monitor(int run_number) {
                 text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
                 text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
                 text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
-                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel));
+                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_map[channel]));
                 gPad->SetLogz();
             }
         }
