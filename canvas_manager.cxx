@@ -2,6 +2,8 @@
 
 #include <TCanvas.h>
 #include <TSystem.h>
+#include <TROOT.h>
+#include <TFile.h>
 
 #include <vector>
 #include <memory>
@@ -31,13 +33,11 @@ void canvas_manager::update() {
     gSystem->ProcessEvents();
 }
 
-void canvas_manager::save_all(int run_number) {
+void canvas_manager::save_all(int run_number, int time) {
     // Make the directory monitoring_plots if it does not exist
     gSystem->mkdir("monitoring_plots", kTRUE);
     gSystem->mkdir(Form("monitoring_plots/run_%03d", run_number), kTRUE);
     std::cout << "saving " << canvases.size() << " canvases" << std::endl;
-    auto timestamp = std::chrono::system_clock::now();
-    auto time = std::chrono::system_clock::to_time_t(timestamp);
     for (int i = 0; i < canvases.size(); i++) {
         // std::cout << "saving " << canvases[i]->GetName() << std::endl;
         canvases[i]->SaveAs(Form("monitoring_plots/run_%03d/run_%03d_%s_%d.pdf", run_number, run_number, canvases[i]->GetName(), time));

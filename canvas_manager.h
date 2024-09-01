@@ -29,5 +29,5 @@ public:
     TCanvas* get_canvas(uint32_t index) { return canvases[index]; }
     void delete_canvas(uint32_t index) { canvases.erase(canvases.begin() + index); }
     void update();
-    void save_all(int run_number);
+    void save_all(int run_number, int time);
 };

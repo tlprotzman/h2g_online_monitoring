@@ -21,6 +21,7 @@ Tristan Protzman, 27-08-2024
 #include <TSystem.h>
 #include <TStyle.h>
 #include <TLatex.h>
+#include <TFile.h>
 #include <THttpServer.h>
 
 #include <vector>
@@ -131,6 +132,8 @@ void process_lines(std::vector<line> &lines, line_stream_vector &streams, TH1 *d
 class online_monitor {
 private:
     int run_number;
+    int timestamp; 
+    TFile *output;
     canvas_manager canvases;
 
     std::vector<TH2*> adc_per_channel;
@@ -152,6 +155,12 @@ public:
 };
 
 online_monitor::online_monitor(int run_number) {
+    gSystem->mkdir("monitoring_plots", kTRUE);
+    gSystem->mkdir(Form("monitoring_plots/run_%03d", run_number), kTRUE);
+    output = new TFile(Form("monitoring_plots/run_%03d/monitoring.root", run_number), "RECREATE");
+    auto time = std::chrono::system_clock::now();
+    timestamp = std::chrono::system_clock::to_time_t(time);
+
     this->run_number = run_number;
     auto s = server::get_instance()->get_server();
     canvases = canvas_manager::get_instance();
@@ -326,7 +335,10 @@ online_monitor::online_monitor(int run_number) {
 }
 
 online_monitor::~online_monitor() {
-    canvases.save_all(run_number);
+    canvases.save_all(run_number, timestamp);
+    output->Write();
+    std::cout << "Writing root file..." << std::endl;
+    output->Close();
 }
 
 void test_decoding() {
