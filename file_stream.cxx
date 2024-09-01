@@ -90,10 +90,15 @@ file_stream::file_stream(const char *fname) {
     }
     // read file until newline is found
     char c;
-    while (file.get(c) && c == '#') {
+    // skip the first 21 lines... sigh.  this should be better
+    for (int i = 0; i < 21; i++) {
         while (file.get(c) && c != '\n');
     }
-    file.seekg(-1, std::ios::cur);
+
+    // while (file.get(c) && c == '#') {
+    //     while (file.get(c) && c != '\n');
+    // }
+    // file.seekg(-1, std::ios::cur);
     current_head = file.tellg();
     std::cout << "Starting at " << current_head << std::endl;
 }
@@ -135,7 +140,7 @@ void file_stream::print_packet_numbers() {
     }
 }
 
-bool file_stream::read_packet(uint8_t *buffer) {
+int file_stream::read_packet(uint8_t *buffer) {
     auto config = configuration::get_instance();
     // Check if PACKET_SIZE bytes are available to read
     // std::cout << "trying to read from " << file.tellg() << std::endl;
@@ -143,7 +148,7 @@ bool file_stream::read_packet(uint8_t *buffer) {
     if (file.tellg() - current_head < config->PACKET_SIZE) {
         // std::cerr << "Not enough bytes available to read line" << std::endl;
         file.seekg(current_head, std::ios::beg);
-        return false;
+        return 0;
     }
     file.seekg(current_head, std::ios::beg);
     // file.seekg(-1 * PACKET_SIZE, std::ios::cur);
@@ -162,7 +167,11 @@ bool file_stream::read_packet(uint8_t *buffer) {
 	}
 
 	perror("bad read");
-        return false;
+        return 0;
+    }
+    // Check if this is a heartbeat packet
+    if (buffer[0] == 0x23 && buffer[1] == 0x23 && buffer[2] == 0x23 && buffer[3] == 0x23) {
+        return 2;
     }
     uint16_t packet_number = (buffer[2] << 8) + (buffer[3]);
     uint32_t fpga_id = buffer[13];
@@ -175,5 +184,5 @@ bool file_stream::read_packet(uint8_t *buffer) {
     }
     total_packets[fpga_id]++;
     current_packet[fpga_id] = packet_number;
-    return true;
+    return 1;
 }

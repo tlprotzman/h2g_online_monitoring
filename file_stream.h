@@ -26,6 +26,6 @@ private:
 public:
     file_stream(const char *fname);
     ~file_stream();
-    bool read_packet(uint8_t *buffer);
+    int read_packet(uint8_t *buffer);
     void print_packet_numbers();
 };

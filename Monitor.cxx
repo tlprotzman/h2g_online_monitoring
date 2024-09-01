@@ -415,9 +415,13 @@ void test_reading(int run) {
             start_time = std::chrono::high_resolution_clock::now();
             std::cout << " done!" << std::endl;
         }
-        bool good_data = fs.read_packet(buffer);
+        int good_data = fs.read_packet(buffer);
         if (!good_data) {
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            continue;
+        }
+        if (good_data == 2) {
+            // std::cout << "Heartbeat packet" << std::endl;
             continue;
         }
         std::vector<line> lines(36);    // 36 lines per packet
