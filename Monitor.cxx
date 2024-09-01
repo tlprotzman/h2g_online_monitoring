@@ -133,7 +133,7 @@ private:
 public:
     channel_stream_vector channels;
     line_stream_vector line_streams;
-    online_monitor();
+    online_monitor(int run_number);
     ~online_monitor();
 
     // TRint *app;
@@ -144,14 +144,14 @@ public:
     void update();
 };
 
-online_monitor::online_monitor() {
+online_monitor::online_monitor(int run_number) {
     auto s = server::get_instance()->get_server();
     canvases = canvas_manager::get_instance();
     auto config = configuration::get_instance();
     for (int i = 0; i < config->NUM_FPGA; i++) {
-        adc_per_channel.push_back(new TH2D(Form("adc_per_channel_%d", i), Form("ADC per Channel FPGA %d", i), 144, 0, 144, 1024, 0, config->MAX_ADC));
-        tot_per_channel.push_back(new TH2D(Form("tot_per_channel_%d", i), Form("TOT per Channel FPGA %d", i), 144, 0, 144, 1024, 0, config->MAX_TOT));
-        toa_per_channel.push_back(new TH2D(Form("toa_per_channel_%d", i), Form("TOA per Channel FPGA %d", i), 144, 0, 144, 1024, 0, config->MAX_TOA));
+        adc_per_channel.push_back(new TH2D(Form("adc_per_channel_%d", i), Form("Run %03d ADC per Channel FPGA %d", run_number, i), 144, 0, 144, 1024, 0, config->MAX_ADC));
+        tot_per_channel.push_back(new TH2D(Form("tot_per_channel_%d", i), Form("Run %03d TOT per Channel FPGA %d", run_number, i), 144, 0, 144, 1024, 0, config->MAX_TOT));
+        toa_per_channel.push_back(new TH2D(Form("toa_per_channel_%d", i), Form("Run %03d TOA per Channel FPGA %d", run_number, i), 144, 0, 144, 1024, 0, config->MAX_TOA));
         s->Register("/qa_plots/graphs/adc", adc_per_channel.back());
         s->Register("/qa_plots/graphs/tot", tot_per_channel.back());
         s->Register("/qa_plots/graphs/toa", toa_per_channel.back());
@@ -232,17 +232,19 @@ online_monitor::online_monitor() {
                 c->cd(channel + 1);
                 channels[fpga][asic][channel]->draw_adc();
                 text->SetTextAlign(33);
-                text->DrawLatexNDC(0.95, 0.95, Form("FPGA %d", fpga));
-                text->DrawLatexNDC(0.95, 0.82, Form("ASIC %d", asic));
-                text->DrawLatexNDC(0.95, 0.69, Form("Channel %d", channel));
+                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
+                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
+                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel));
                 gPad->SetLogy();
                 c = canvases.get_canvas(waveform_canvas[fpga * config->NUM_ASIC + asic]);
                 c->cd(channel + 1);
                 channels[fpga][asic][channel]->draw_waveform();
                 text->SetTextAlign(33);
-                text->DrawLatexNDC(0.95, 0.95, Form("FPGA %d", fpga));
-                text->DrawLatexNDC(0.95, 0.82, Form("ASIC %d", asic));
-                text->DrawLatexNDC(0.95, 0.69, Form("Channel %d", channel));
+                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
+                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
+                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel));
                 gPad->SetLogz();
             }
         }
@@ -278,17 +280,19 @@ online_monitor::online_monitor() {
                 c->cd(channel + 1);
                 channels[fpga][asic][channel_map[channel]]->draw_adc();
                 text->SetTextAlign(33);
-                text->DrawLatexNDC(0.95, 0.95, Form("FPGA %d", fpga));
-                text->DrawLatexNDC(0.95, 0.82, Form("ASIC %d", asic));
-                text->DrawLatexNDC(0.95, 0.69, Form("Channel %d", channel_map[channel]));
+                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
+                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
+                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel));
                 gPad->SetLogy();
                 c = canvases.get_canvas(waveform_canvas[fpga * config->NUM_ASIC + asic]);
                 c->cd(channel + 1);
                 channels[fpga][asic][channel_map[channel]]->draw_waveform();
                 text->SetTextAlign(33);
-                text->DrawLatexNDC(0.95, 0.95, Form("FPGA %d", fpga));
-                text->DrawLatexNDC(0.95, 0.82, Form("ASIC %d", asic));
-                text->DrawLatexNDC(0.95, 0.69, Form("Channel %d", channel_map[channel]));
+                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
+                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
+                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel));
                 gPad->SetLogz();
             }
         }
@@ -326,7 +330,7 @@ void test_reading(int run) {
     // auto server = canvases->get_server();
     auto s = server::get_instance()->get_server();
     auto start_time = std::chrono::high_resolution_clock::now();
-    auto m = new online_monitor();
+    auto m = new online_monitor(run);
     auto line_numbers = new TH1I("line_numbers", "Line Numbers", 5, 0, 5);
     // const char *fname = "run051.txt";
 
