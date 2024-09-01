@@ -157,9 +157,9 @@ public:
 online_monitor::online_monitor(int run_number) {
     gSystem->mkdir("monitoring_plots", kTRUE);
     gSystem->mkdir(Form("monitoring_plots/run_%03d", run_number), kTRUE);
-    output = new TFile(Form("monitoring_plots/run_%03d/monitoring.root", run_number), "RECREATE");
     auto time = std::chrono::system_clock::now();
     timestamp = std::chrono::system_clock::to_time_t(time);
+    output = new TFile(Form("monitoring_plots/run_%03d/run_%03d_monitoring_%d.root", run_number, run_number, timestamp), "RECREATE");
 
     this->run_number = run_number;
     auto s = server::get_instance()->get_server();
