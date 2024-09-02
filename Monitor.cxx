@@ -11,6 +11,7 @@ Tristan Protzman, 27-08-2024
 #include "configuration.h"
 #include "canvas_manager.h"
 #include "server.h"
+#include "event_builder.h"
 
 #include <TROOT.h>
 #include <TH1.h>
@@ -140,6 +141,9 @@ private:
     std::vector<TH2*> tot_per_channel;
     std::vector<TH2*> toa_per_channel;
 
+    event_builder **builders;
+
+
 public:
     channel_stream_vector channels;
     line_stream_vector line_streams;
@@ -151,7 +155,9 @@ public:
         canvases.update();
         gSystem->ProcessEvents();
     }
+    void update_builder_graphs();
     void update();
+    void update_events();
 };
 
 online_monitor::online_monitor(int run_number) {
@@ -220,6 +226,12 @@ online_monitor::online_monitor(int run_number) {
                 half->associate_channels(channels);
             }
         }
+    }
+
+    // Set up event builders 
+    builders = new event_builder*[config->NUM_FPGA];
+    for (int i = 0; i < config->NUM_FPGA; i++) {
+        builders[i] = new event_builder(decode_fpga(i));
     }
 
     auto text = new TLatex();
@@ -336,9 +348,32 @@ online_monitor::online_monitor(int run_number) {
 
 online_monitor::~online_monitor() {
     canvases.save_all(run_number, timestamp);
+    for (int i = 0; i < configuration::get_instance()->NUM_FPGA; i++) {
+        builders[i]->update_stats();
+    }
     output->Write();
     std::cout << "Writing root file..." << std::endl;
     output->Close();
+
+}
+
+void online_monitor::update_events() {
+    for (auto fpga_id : channels) {
+        for (auto asic_id : fpga_id) {
+            for (auto channel : asic_id) {
+                while (channel->has_events()) {
+                    auto event = channel->get_event();
+                    builders[event->get_fpga_id()]->channel_hit(event);
+                }
+            }
+        }
+    }
+}
+
+void online_monitor::update_builder_graphs() {
+    for (int i = 0; i < configuration::get_instance()->NUM_FPGA; i++) {
+        builders[i]->update_stats();
+    }
 }
 
 void test_decoding() {
@@ -408,8 +443,9 @@ void test_reading(int run) {
         }
         s->ProcessRequests();
         if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_time).count() > 4) {
-            fs.print_packet_numbers();
             std::cout << "Updating canvases...";
+            fs.print_packet_numbers();
+            m->update_builder_graphs();
             m->update_canvases();
             gSystem->ProcessEvents();
             start_time = std::chrono::high_resolution_clock::now();
@@ -430,6 +466,7 @@ void test_reading(int run) {
         for (auto line : lines) {
             line_numbers->Fill(line.line_number);
         }
+        m->update_events();
 
         // for (int i = 0; i < PACKET_SIZE; i++) {
         //     std::cout << setfill('0') << setw(2) << std::hex << (int)buffer[i] << " ";

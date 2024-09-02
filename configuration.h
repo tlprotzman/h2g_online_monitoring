@@ -20,7 +20,7 @@ public:
 
     int NUM_FPGA = 4;
     int NUM_ASIC = 2;
-    int NUM_CHANNELS = 80;
+    int NUM_CHANNELS = 72;
     int NUM_LINES = 5;
 
     int MAX_SAMPLES = 20;

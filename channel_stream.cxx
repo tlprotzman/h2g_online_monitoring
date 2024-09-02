@@ -2,6 +2,7 @@
 
 #include "configuration.h"
 #include "server.h"
+#include "event_builder.h"
 
 #include <TH1.h>
 #include <TH2.h>
@@ -54,7 +55,7 @@ channel_stream::~channel_stream() {
 
 void channel_stream::construct_event(uint32_t timestamp, uint32_t adc) {
     if (current_event == nullptr) {
-        current_event = new event(fpga_id, channel, events, configuration::get_instance()->MAX_SAMPLES);
+        current_event = new single_channel_event(fpga_id, channel, events, configuration::get_instance()->MAX_SAMPLES);
     }
     auto success = current_event->add_sample(timestamp, adc);
     if (!success) {
@@ -66,7 +67,7 @@ void channel_stream::construct_event(uint32_t timestamp, uint32_t adc) {
     if (current_event->is_complete()) {
         // std::cout << "Event complete!" << std::endl;
         current_event->fill_waveform(adc_waveform, adc_max);
-        delete current_event;
+        completed_events.push_back(current_event);
         current_event = nullptr;
         events++;
     }

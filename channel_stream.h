@@ -3,6 +3,7 @@
 #include "event_builder.h"
 
 #include <cstdint>
+#include <list>
 
 #include <TH1.h>
 #include <TH2.h>
@@ -17,7 +18,7 @@ private:
     long int packets_complete;
     long int events;
 
-    event *current_event;
+    single_channel_event *current_event;
 
     TCanvas *c;
 
@@ -33,6 +34,8 @@ private:
     TH2 *adc_waveform;
     TH1 *adc_max;
 
+    std::list<single_channel_event*> completed_events;
+
 public:
     channel_stream(int fpga_id, int asic_id, int channel, TH2 *adc_per_channel, TH2 *tot_per_channel, TH2 *toa_per_channel);
     ~channel_stream();
@@ -44,6 +47,14 @@ public:
     void draw_waveform() {adc_waveform->Draw("col");}
     void draw_max() {adc_max->Draw();}
     int test = 42;
+
+    bool has_events() {return completed_events.size() > 0;}
+    int completed_event_size() {return completed_events.size();}
+    single_channel_event *get_event() {
+        auto e = completed_events.front();
+        completed_events.pop_front();
+        return e;
+    }
 };
 
 typedef std::vector<std::vector<std::vector<channel_stream*>>> channel_stream_vector;
