@@ -19,6 +19,8 @@ Tristan Protzman, 27-08-2024
 #include <TH1.h>
 #include <TH2.h>
 #include <TH2D.h>
+#include <TH3.h>
+#include <TH3D.h>
 #include <TRint.h>
 #include <TApplication.h>
 #include <TSystem.h>
@@ -74,29 +76,45 @@ void test_reading(int run) {
     // const char *fname = "PhaseScanChannel16Phase2.txt";
     file_stream fs(fname);
     uint8_t buffer[configuration::get_instance()->PACKET_SIZE];
+    uint32_t heartbeat_seconds = 0;
+    uint32_t heartbeat_milliseconds = 0;
     // for (int iteration = 0; iteration < 50; iteration++) {
     // for (int iteration = 0; iteration < 61100; iteration++) {
+    bool all_events_built = false;
     for (int iteration = 0; iteration < 10000000; iteration++) {
         if (stop) {
             break;
         }
         s->ProcessRequests();
         if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_time).count() > 4) {
+            std::cout << "Building events...";
+            m->build_events();
+            std::cout << " done!" << std::endl;
             std::cout << "Updating canvases...";
             fs.print_packet_numbers();
             m->update_builder_graphs();
             m->update_canvases();
             gSystem->ProcessEvents();
             start_time = std::chrono::high_resolution_clock::now();
+            // m->make_event_display();
             std::cout << " done!" << std::endl;
+            all_events_built = true;
         }
         int good_data = fs.read_packet(buffer);
         if (!good_data) {
+            if (all_events_built) {
+                std::cout << "All events built, exiting..." << std::endl;
+                break;
+            }
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             continue;
         }
+        all_events_built = false;
         if (good_data == 2) {
             // std::cout << "Heartbeat packet" << std::endl;
+            heartbeat_seconds = bit_converter(buffer, 12, false);
+            heartbeat_milliseconds = bit_converter(buffer, 16, false);
+            // std::cout << "Heartbeat: " << heartbeat_seconds << "." << heartbeat_milliseconds << std::endl;
             continue;
         }
         std::vector<line> lines(36);    // 36 lines per packet

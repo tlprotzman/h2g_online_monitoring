@@ -8,6 +8,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TCanvas.h>
+#include <TTree.h>
 
 class channel_stream {
 private:
@@ -17,6 +18,8 @@ private:
     long int packets_attempted;
     long int packets_complete;
     long int events;
+    uint32_t last_heartbeat_seconds;
+    uint32_t last_heartbeat_milliseconds;
 
     single_channel_event *current_event;
 
