@@ -100,7 +100,7 @@ file_stream::file_stream(const char *fname) {
     // }
     // file.seekg(-1, std::ios::cur);
     current_head = file.tellg();
-    std::cout << "Starting at " << current_head << std::endl;
+    std::cout << "Starting at byte " << current_head << std::endl;
 }
 
 file_stream::~file_stream() {
@@ -125,10 +125,6 @@ file_stream::~file_stream() {
 
 void file_stream::print_packet_numbers() {
     for (int i = 0; i < configuration::get_instance()->NUM_FPGA; i++) {
-        // std::cout << "FPGA " << i << std::endl;
-        // std::cout << "\tTotal packets: " << total_packets[i] << std::endl;
-        // std::cout << "\tMissed packets: " << missed_packets[i] << std::endl;
-        // std::cout << "\tMissed packet rate: " << (double)missed_packets[i] / total_packets[i] << std::endl;
         auto time = TDatime();
         recieved_packet_graphs[i]->SetPoint(recieved_packet_graphs[i]->GetN(), time.Convert(), total_packets[i]);
         recieved_packet_graphs[i]->GetYaxis()->SetRangeUser(0, 1.2 * (float)total_packets[i]);
@@ -143,16 +139,13 @@ void file_stream::print_packet_numbers() {
 int file_stream::read_packet(uint8_t *buffer) {
     auto config = configuration::get_instance();
     // Check if PACKET_SIZE bytes are available to read
-    // std::cout << "trying to read from " << file.tellg() << std::endl;
     file.seekg(0, std::ios::end);
     if (file.tellg() - current_head < config->PACKET_SIZE) {
-        // std::cerr << "Not enough bytes available to read line" << std::endl;
         file.seekg(current_head, std::ios::beg);
         return 0;
     }
     file.seekg(current_head, std::ios::beg);
     // file.seekg(-1 * PACKET_SIZE, std::ios::cur);
-    // std::cout << "Reading from " << current_head << std::endl;
     file.read(reinterpret_cast<char*>(buffer), config->PACKET_SIZE);;
     current_head = file.tellg();
     if (file.rdstate() & std::ifstream::failbit || file.rdstate() & std::ifstream::badbit) {

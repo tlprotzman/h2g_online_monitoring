@@ -1,5 +1,4 @@
-#ifndef SERVER_H
-#define SERVER_H
+#pragma once
 
 #include "THttpServer.h"
 
@@ -31,14 +30,3 @@ public:
     }
 
 };
-
-/*
-
-even though I've defined the s.tatic member variable outside the class, 
-it remains inaccessible directly because it's still declared as private 
-within the class. The purpose of defining it outside the class is to 
-allocate memory for it, but its access is still controlled by the class's 
-access specifiers.
-*/
-
-#endif

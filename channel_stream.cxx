@@ -18,7 +18,6 @@ channel_stream::channel_stream(int fpga_id, int asic_id, int channel, TH2 *adc_p
     packets_complete = 0;
     events = 0;
     current_event = nullptr;
-    // std::cout << "and here: " << asic_id << std::endl;
     
     adc_spectra = new TH1D(Form("adc_spectra_%d_%d_%d", fpga_id, asic_id, channel), Form("ADC Spectra FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), config->MAX_ADC/2, 0, config->MAX_ADC);
     tot_spectra = new TH1D(Form("tot_spectra_%d_%d_%d", fpga_id, asic_id, channel), Form("TOT Spectra FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), config->MAX_TOT/2, 0, config->MAX_TOT);
@@ -27,7 +26,6 @@ channel_stream::channel_stream(int fpga_id, int asic_id, int channel, TH2 *adc_p
     tot_spectra->SetTitle("");
     toa_spectra->SetTitle("");
     
-    // std::cout << "the max samples is " << config->MAX_SAMPLES << std::endl;
     adc_waveform = new TH2D(Form("adc_waveform_%d_%d_%d", fpga_id, asic_id, channel), Form("ADC Waveform FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), config->MAX_SAMPLES, 0, config->MAX_SAMPLES, 1024, 0, config->MAX_ADC);
     adc_waveform->SetTitle("");
 
@@ -37,8 +35,6 @@ channel_stream::channel_stream(int fpga_id, int asic_id, int channel, TH2 *adc_p
     s->Register(Form("/qa_plots/graphs/individual/fpga%d/adc", fpga_id), adc_spectra);
     s->Register(Form("/qa_plots/graphs/individual/fpga%d/tot", fpga_id), tot_spectra);
     s->Register(Form("/qa_plots/graphs/individual/fpga%d/toa", fpga_id), toa_spectra);
-
-    // s->Register(Form("/qa_plots/graphs/individual/fpga%d/adc_waveform", fpga_id), adc_waveform);
     s->Register(Form("/qa_plots/test/fpga%d/adc_waveform", fpga_id), adc_waveform);
     s->Register(Form("/qa_plots/test/fpga%d/adc_max", fpga_id), adc_max);
 
@@ -61,11 +57,9 @@ void channel_stream::construct_event(uint32_t timestamp, uint32_t adc) {
     if (!success) {
         delete current_event;
         current_event = nullptr;
-        // std::cerr << "going to recurse...." << std::endl;
         construct_event(timestamp, adc);  // is this a bad idea?  probably
     }
     if (current_event->is_complete()) {
-        // std::cout << "Event complete!" << std::endl;
         current_event->fill_waveform(adc_waveform, adc_max);
         current_event->write_to_tree();
         completed_events.push_back(current_event);
@@ -75,13 +69,10 @@ void channel_stream::construct_event(uint32_t timestamp, uint32_t adc) {
 }
 
 void channel_stream::fill_readouts(uint32_t adc, uint32_t tot, uint32_t toa) {
-    // std::cout << "adc: " << adc << " tot: " << tot << " toa: " << toa << std::endl;
-    // std::cout << "channel? " << channel << std::endl;
-//    std::cout << this << " " << fpga_id << " " << asic_id << " " << channel << std::endl;
     adc_spectra->Fill(adc);
     tot_spectra->Fill(tot);
     toa_spectra->Fill(toa);
-    // std::cout << "asic: " << asic_id << std::endl;
+
     adc_per_channel->Fill(72 * asic_id + channel, adc);
     tot_per_channel->Fill(72 * asic_id + channel, tot);
     toa_per_channel->Fill(72 * asic_id + channel, toa);

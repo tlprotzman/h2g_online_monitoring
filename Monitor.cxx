@@ -44,13 +44,11 @@ void signal_handler(int signal) {
     stop = true;
 }
 
-void test_reading(int run) {
-    // auto server = canvases->get_server();
+void run_monitoring(int run) {
     auto s = server::get_instance()->get_server();
     auto start_time = std::chrono::high_resolution_clock::now();
     auto m = new online_monitor(run);
     auto line_numbers = new TH1I("line_numbers", "Line Numbers", 5, 0, 5);
-    // const char *fname = "run051.txt";
 
     // Some histograms to check the data rates from each board/asic
     auto data_rates = new TH1D("lines_received", "Lines Received;;#", 16, 0, 16);
@@ -61,7 +59,6 @@ void test_reading(int run) {
     for (int i = 0; i < 16; i++) {
         data_rates->GetXaxis()->SetBinLabel(i + 1, readout_label[i]);
     }
-    // data_rates->SetMinimum(0);
     s->Register("/qa_plots/daq/", data_rates);
 
     auto dir = getenv("DATA_DIRECTORY");
@@ -73,13 +70,11 @@ void test_reading(int run) {
     }
 
     const char *fname = Form("%s/Run%03d.h2g", dir, run);
-    // const char *fname = "PhaseScanChannel16Phase2.txt";
     file_stream fs(fname);
     uint8_t buffer[configuration::get_instance()->PACKET_SIZE];
     uint32_t heartbeat_seconds = 0;
     uint32_t heartbeat_milliseconds = 0;
-    // for (int iteration = 0; iteration < 50; iteration++) {
-    // for (int iteration = 0; iteration < 61100; iteration++) {
+
     bool all_events_built = false;
     for (int iteration = 0; iteration < 10000000; iteration++) {
         if (stop) {
@@ -102,10 +97,10 @@ void test_reading(int run) {
         }
         int good_data = fs.read_packet(buffer);
         if (!good_data) {
-            if (all_events_built) {
-                std::cout << "All events built, exiting..." << std::endl;
-                break;
-            }
+            // if (all_events_built) {
+            //     std::cout << "All events built, exiting..." << std::endl;
+            //     break;
+            // }
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             continue;
         }
@@ -124,11 +119,6 @@ void test_reading(int run) {
             line_numbers->Fill(line.line_number);
         }
         m->update_events();
-
-        // for (int i = 0; i < PACKET_SIZE; i++) {
-        //     std::cout << setfill('0') << setw(2) << std::hex << (int)buffer[i] << " ";
-        // }
-        // std::cout << std::endl << std::endl << std::endl;;
     }
     delete m;
     std::cout << "Exiting cleanly, just for you Fredi!" << std::endl;
@@ -139,11 +129,9 @@ int Monitor(int run, std::string config_file) {
     signal(SIGINT, signal_handler);
 
     gStyle->SetOptStat(0);
-    // 
-    // test_decoding();
-    load_configs(config_file);
+    load_configs(config_file);  // Always load the config before starting 
     print_configs();
-    test_reading(run);
+    run_monitoring(run);
     return 0;
 }
 

@@ -5,7 +5,6 @@
 #include <iostream>
 
 line_stream::line_stream() {
-    // std::cout << "running constructor" << std::endl;
     uint32_t **test_package;
     auto config = configuration::get_instance();
     package = (uint32_t**)malloc(config->NUM_LINES * sizeof(uint32_t *));
@@ -19,17 +18,10 @@ line_stream::line_stream() {
 
 void line_stream::associate_channels(channel_stream_vector &c) {
     this->channels = c;
-    // std::cout << "address of c: " << &c << std::endl;
-    // std::cout << "address of this->channels: " << &(this->channels) << std::endl;
-    // std::cout << "address of this: " << this << std::endl;
-    // std::cout << "point b: " << channels[0][0][0]->test << std::endl;
 }
 
 
 void line_stream::add_line(line &l) {
-    // return;
-    // std::cout << "Adding line" << std::endl;
-    // std::cout << l.fpga_id << " " << l.asic_id << " " << l.half_id << " " << l.line_number << " " << l.timestamp << std::endl;
     // If we get a new timestamp, reset the package
     if (l.line_number == 0) {
         timestamp = l.timestamp;
@@ -53,7 +45,6 @@ void line_stream::add_line(line &l) {
     // If we have a complete package, process it
     if (l.line_number == 4) {
         // Process the package
-        // std::cout << "Found complete package!" << std::endl;
         decode(l.asic_id, l.fpga_id, l.half_id, l.timestamp);
         // Reset the package
         timestamp = 0;
@@ -95,21 +86,11 @@ void line_stream::decode(int32_t asic_id, int32_t fpga_id, int32_t half_id, uint
         // TOT is a 12 bit counter, but gets sent as a 10 bit number
         // If the most significant bit is 1, then the lower two bits were dropped
         if (TOT & 0x200) {
-            // std::cout << "shifting tot" << std::endl;
             TOT = TOT & 0b0111111111;
             TOT = TOT << 3;
-        } else {
-            // std::cout << "not shifting tot" << std::endl;
         }
-        // if (i == 0) {
-        // if (ADC > 1) {
-        //     std::cout << "Channel " << i << " Tc: " << Tc << " Tp: " << Tp << " ADC: " << ADC << " TOT: " << TOT << " TOA: " << TOA << std::endl;
-        // }
-        // std::cerr << "trying to fill channel " << i << std::endl;
+    
         channels[fpga_id][asic_id][i + 36 * half_id]->construct_event(timestamp, ADC);
         channels[fpga_id][asic_id][i + 36 * half_id]->fill_readouts(ADC, TOT, TOA);
-            // std::cout << "ADC: " << ADC << std::endl;
-        // }
-        // std::cout << channels[fpga_id][asic_id][half_id]->test << std::endl;
     }
 }

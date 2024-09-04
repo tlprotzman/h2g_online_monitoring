@@ -5,13 +5,13 @@
 #include <string>
 
 void load_configs(std::string config_file) {
+    std::cout << "Parsing config file " << config_file << std::endl;
     auto config = configuration::get_instance();
     std::ifstream file(config_file);
     if (file.is_open()) {
         std::string line;
         while (std::getline(file, line)) {
             // Process each line of the config file
-            // Example: Split the line into key-value pairs
             std::string key, value;
             std::size_t delimiter_pos = line.find('=');
             if (delimiter_pos != std::string::npos) {
@@ -45,7 +45,9 @@ void load_configs(std::string config_file) {
     } else {
         std::cerr << "Failed to open config file: " << config_file << std::endl;
     }
+    std::cout << "\n\n";
     print_configs();
+    std::cout << "\n\n";
 }
 
 void print_configs() {

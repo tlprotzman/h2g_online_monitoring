@@ -76,25 +76,19 @@ online_monitor::online_monitor(int run_number) {
             channels[fpga].push_back(std::vector<channel_stream*>());
             for (int half = 0; half < 2; half++) {
                 auto l = new line_stream();
-                // std::cout << "address of l: " << l << std::endl;
                 line_streams[fpga][asic].push_back(l);
             }
             for (int channel = 0; channel < 72; channel++) {
-                // std::cout << "asic here: " << asic << std::endl;
                 auto c = new channel_stream(fpga, asic, channel, adc_per_channel[fpga], tot_per_channel[fpga], toa_per_channel[fpga]);
-                // std::cout << "address of c: " << c << std::endl;
                 channels[fpga][asic].push_back(c);
             }
         }
     }
 
-    // std::cerr << "point a: " << channels[0][0][0]->test << std::endl;
-
     // The line streams need to be able to fill the channel streams
     for (auto fpga : line_streams) {
         for (auto asic : fpga) {
             for (auto half : asic) {
-                // std::cout << "address of half: " << &half << std::endl;
                 half->associate_channels(channels);
             }
         }
@@ -265,14 +259,14 @@ online_monitor::online_monitor(int run_number) {
 
             }
         }
+    }
     // Set up event display
     event_drawn = 0;
-    auto c = canvases.new_canvas("event_display", Form("Run %03d Event Display", run_number), 1200, 800);
+    auto c = canvases.new_canvas("event_display_canvas", Form("Run %03d Event Display", run_number), 1200, 800);
     auto canvas = canvases.get_canvas(c);
     event_display = new TH3D("event_display", Form("Run %03d Event Display", run_number), 64, 0, 64, 4, 0, 4, 2, 0, 2);
     event_display->Draw("BOX2");
     s->Register("/event_display", canvas);
-    }
 }
 
 online_monitor::~online_monitor() {
@@ -306,19 +300,19 @@ void online_monitor::update_builder_graphs() {
 }
 
 void online_monitor::build_events() {
+    return;
     thunderdome->align_events();
     std::cout << "Built " << thunderdome->get_num_events() << " events" << std::endl;
 }
 
 void online_monitor::make_event_display() {
-    // return;
-    // Clear existing event display
-    // event_display->Clear();
+    return;
     // Make sure we actually have completed events...
     if (thunderdome->get_num_events() == 0) {
         std::cout << "No events to display" << std::endl;
         return;
     }
+    // Clear existing event display
     event_display->Reset();
     auto last_event = thunderdome->get_event(event_drawn);
     std::cout << "\nDrawing event " << event_drawn << std::endl;

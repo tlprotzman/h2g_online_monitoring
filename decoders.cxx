@@ -10,17 +10,10 @@
 
 int decode_fpga(int fpga_id) {
     return fpga_id;
-    // if (fpga_id == 0) {
-    //     return 0;
-    // }
-    // return -1;
 }
 
 int encode_fpga(int fpga_id) {
-    if (fpga_id == 0) {
-        return 0;
-    }
-    return -1;
+    return fpga_id;
 }
 
 int decode_asic(int asic_id) {
@@ -92,7 +85,6 @@ int decode_packet(std::vector<line> &lines, uint8_t *buffer) {
 
 void process_lines(std::vector<line> &lines, line_stream_vector &streams, TH1 *data_rates) {
     for (auto line : lines) {
-        // std::cout << line.fpga_id << " " << line.asic_id << " " << line.half_id << " " << line.line_number << " " << line.timestamp << std::endl;
         if (line.fpga_id == -1 || line.asic_id == -1 || line.half_id == -1) {
             continue;
         }

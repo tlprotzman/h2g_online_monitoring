@@ -76,7 +76,6 @@ void single_channel_event::fill_waveform(TH2 *waveform, TH1 *max) {
 int single_channel_event::get_max_sample() {
     int max_sample = 0;
     for (int i = 1; i < configuration::get_instance()->MAX_SAMPLES; i++) {
-        // std::cerr << "i is " << i << ", found samples is " << this->found_samples << " and sample is " << this->samples[i] << std::endl;
         if (this->samples[i] > max_sample) {
             max_sample = this->samples[i];
         }
@@ -89,7 +88,6 @@ int single_channel_event::get_max_sample() {
 }
 
 void single_channel_event::write_to_tree() {
-    // std::cout << "Writing to tree" << std::endl;
     auto tree = single_channel_tree::get_instance();
     tree->current_fpga_id = fpga_id;
     tree->current_channel = channel;
@@ -117,11 +115,6 @@ kcu_event::kcu_event(uint32_t ts, uint32_t fpga) {
 }
 
 kcu_event::~kcu_event() {
-    // for (auto &c : channels) {
-        // if (c != nullptr) {
-            // delete c;
-        // }
-    // }
 }
 
 event_builder::event_builder(uint32_t fpga) {
@@ -231,7 +224,6 @@ event_thunderdome::~event_thunderdome() {
 }
 
 void event_thunderdome::align_events() {
-    // return; // don't crash overnight pls
     // how many events are sitting in the buffer?
     uint32_t max_event_buffer = 0;
     // std::cout << std::endl;

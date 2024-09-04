@@ -20,15 +20,15 @@ uint32_t canvas_manager::new_canvas(const char *name, const char *title, int wid
 
 void canvas_manager::update() {
     for (auto c : canvases) {
-            c->Update();
-            auto primatives = c->GetListOfPrimitives();
-            for (auto p : *primatives) {
-                if (p->IsA() == TPad::Class()) {
-                    auto pad = (TPad*)p;
-                    pad->Modified();
-                    pad->Update();
-                }
+        c->Update();
+        auto primatives = c->GetListOfPrimitives();
+        for (auto p : *primatives) {
+            if (p->IsA() == TPad::Class()) {
+                auto pad = (TPad*)p;
+                pad->Modified();
+                pad->Update();
             }
+        }
     }
     gSystem->ProcessEvents();
 }
@@ -39,7 +39,6 @@ void canvas_manager::save_all(int run_number, int time) {
     gSystem->mkdir(Form("monitoring_plots/run_%03d", run_number), kTRUE);
     std::cout << "saving " << canvases.size() << " canvases" << std::endl;
     for (int i = 0; i < canvases.size(); i++) {
-        // std::cout << "saving " << canvases[i]->GetName() << std::endl;
         canvases[i]->SaveAs(Form("monitoring_plots/run_%03d/run_%03d_%s_%d.pdf", run_number, run_number, canvases[i]->GetName(), time));
     }
 }
