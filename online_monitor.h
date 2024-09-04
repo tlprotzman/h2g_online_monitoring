@@ -6,6 +6,7 @@
 #include <TROOT.h>
 #include <TFile.h>
 #include <TH2.h>
+#include <TH3.h>
 
 class online_monitor {
 private:
@@ -18,8 +19,11 @@ private:
     std::vector<TH2*> tot_per_channel;
     std::vector<TH2*> toa_per_channel;
 
-    event_builder **builders;
+    uint32_t event_drawn;
+    TH3 *event_display;
 
+    event_builder **builders;
+    event_thunderdome *thunderdome;
 
 public:
     channel_stream_vector channels;
@@ -33,6 +37,7 @@ public:
         gSystem->ProcessEvents();
     }
     void update_builder_graphs();
-    void update();
     void update_events();
+    void build_events();
+    void make_event_display();
 };

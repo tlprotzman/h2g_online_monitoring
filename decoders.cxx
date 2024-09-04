@@ -63,8 +63,11 @@ int encode_half(int half_id) {
     return -1;
 }
 
-uint32_t bit_converter(uint8_t *buffer, int start) {
-    return (buffer[start] << 24) + (buffer[start + 1] << 16) + (buffer[start + 2] << 8) + buffer[start + 3];
+uint32_t bit_converter(uint8_t *buffer, int start, bool big_endian) {
+    if (big_endian) {
+        return (buffer[start] << 24) + (buffer[start + 1] << 16) + (buffer[start + 2] << 8) + buffer[start + 3];
+    }
+    return (buffer[start + 3] << 24) + (buffer[start + 2] << 16) + (buffer[start + 1] << 8) + buffer[start];
 }
 
 void decode_line(line &p, uint8_t *buffer) {
