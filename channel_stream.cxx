@@ -55,7 +55,7 @@ channel_stream::~channel_stream() {
 
 void channel_stream::construct_event(uint32_t timestamp, uint32_t adc) {
     if (current_event == nullptr) {
-        current_event = new single_channel_event(fpga_id, channel, events, configuration::get_instance()->MAX_SAMPLES);
+        current_event = new single_channel_event(fpga_id, channel, asic_id, configuration::get_instance()->MAX_SAMPLES);
     }
     auto success = current_event->add_sample(timestamp, adc);
     if (!success) {
@@ -67,6 +67,7 @@ void channel_stream::construct_event(uint32_t timestamp, uint32_t adc) {
     if (current_event->is_complete()) {
         // std::cout << "Event complete!" << std::endl;
         current_event->fill_waveform(adc_waveform, adc_max);
+        current_event->write_to_tree();
         completed_events.push_back(current_event);
         current_event = nullptr;
         events++;

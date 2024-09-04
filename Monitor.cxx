@@ -17,6 +17,8 @@ Tristan Protzman, 27-08-2024
 #include <TH1.h>
 #include <TH2.h>
 #include <TH2D.h>
+#include <TH3.h>
+#include <TH3D.h>
 #include <TRint.h>
 #include <TApplication.h>
 #include <TSystem.h>
@@ -33,6 +35,28 @@ Tristan Protzman, 27-08-2024
 #include <chrono>
 #include <thread>
 #include <csignal>
+
+int channel_map[72] = {64, 63, 66, 65, 69, 70, 67, 68,
+                       55, 56, 57, 58, 62, 61, 60, 59,
+                       45, 46, 47, 48, 52, 51, 50, 49,
+                       37, 36, 39, 38, 42, 43, 40, 41,
+                       34, 33, 32, 31, 27, 28, 29, 30,
+                       25, 26, 23, 24, 20, 19, 22, 21,
+                       16, 14, 15, 12,  9, 11, 10, 13,
+                        7,  6,  5,  4,  0,  1,  2,  3,
+                        -1, -1, -1, -1, -1, -1, -1, -1};
+
+int get_channel_x(int channel) {
+    return channel % 4;
+}
+
+int get_channel_y(int channel) {
+    return (channel % 8) > 3 ? 1 : 0;
+}
+
+int get_channel_z(int channel) {
+    return channel / 8;
+} 
 
 // catch ctrl-c
 bool stop = false;
@@ -95,8 +119,11 @@ int encode_half(int half_id) {
     return -1;
 }
 
-uint32_t bit_converter(uint8_t *buffer, int start) {
-    return (buffer[start] << 24) + (buffer[start + 1] << 16) + (buffer[start + 2] << 8) + buffer[start + 3];
+uint32_t bit_converter(uint8_t *buffer, int start, bool big_endian = true) {
+    if (big_endian) {
+        return (buffer[start] << 24) + (buffer[start + 1] << 16) + (buffer[start + 2] << 8) + buffer[start + 3];
+    }
+    return (buffer[start + 3] << 24) + (buffer[start + 2] << 16) + (buffer[start + 1] << 8) + buffer[start];
 }
 
 void decode_line(line &p, uint8_t *buffer) {
@@ -141,7 +168,11 @@ private:
     std::vector<TH2*> tot_per_channel;
     std::vector<TH2*> toa_per_channel;
 
+    uint32_t event_drawn;
+    TH3 *event_display;
+
     event_builder **builders;
+    event_thunderdome *thunderdome;
 
 
 public:
@@ -156,8 +187,9 @@ public:
         gSystem->ProcessEvents();
     }
     void update_builder_graphs();
-    void update();
     void update_events();
+    void build_events();
+    void make_event_display();
 };
 
 online_monitor::online_monitor(int run_number) {
@@ -233,6 +265,7 @@ online_monitor::online_monitor(int run_number) {
     for (int i = 0; i < config->NUM_FPGA; i++) {
         builders[i] = new event_builder(decode_fpga(i));
     }
+    thunderdome = new event_thunderdome(builders);
 
     auto text = new TLatex();
     text->SetTextSize(0.12);
@@ -279,20 +312,7 @@ online_monitor::online_monitor(int run_number) {
         }
     }
 
-    int channel_map[72] = {64, 63, 66, 65, 69, 70, 67, 68,
-	    		   //63, 64, 65, 66, 70, 69, 68, 67, 
-	    		   55, 56, 57, 58, 62, 61, 60, 59,
-                           45, 46, 47, 48, 52, 51, 50, 49,
-                           37, 36, 39, 38, 42, 43, 40, 41,
-			   //36, 37, 38, 39, 43, 42, 41, 40,
-                           34, 33, 32, 31, 27, 28, 29, 30,
-                           25, 26, 23, 24, 20, 19, 22, 21,
-			   //26, 25, 24, 23, 19, 20, 21, 22,
-                           16, 14, 15, 12, 9, 11, 10, 13,
-		           //16, 15, 14, 13,  9, 10, 11, 12,
-                           7, 6, 5, 4, 0, 1, 2, 3,
-			   // 7,  6,  5,  4,  0,  1,  2,  3
-			   };
+
 
     uint32_t ordered_adc_canvas[config->NUM_FPGA * config->NUM_ASIC];
     uint32_t ordered_waveform_canvas[config->NUM_FPGA * config->NUM_ASIC];
@@ -350,6 +370,15 @@ online_monitor::online_monitor(int run_number) {
             }
         }
     }
+
+
+    // Set up event display
+    event_drawn = 0;
+    auto c = canvases.new_canvas("event_display", Form("Run %03d Event Display", run_number), 1200, 800);
+    auto canvas = canvases.get_canvas(c);
+    event_display = new TH3D("event_display", Form("Run %03d Event Display", run_number), 64, 0, 64, 4, 0, 4, 2, 0, 2);
+    event_display->Draw("BOX2");
+    s->Register("/event_display", canvas);
 }
 
 online_monitor::~online_monitor() {
@@ -379,6 +408,57 @@ void online_monitor::update_events() {
 void online_monitor::update_builder_graphs() {
     for (int i = 0; i < configuration::get_instance()->NUM_FPGA; i++) {
         builders[i]->update_stats();
+    }
+}
+
+void online_monitor::build_events() {
+    thunderdome->align_events();
+    std::cout << "Built " << thunderdome->get_num_events() << " events" << std::endl;
+}
+
+void online_monitor::make_event_display() {
+    // return;
+    // Clear existing event display
+    // event_display->Clear();
+    // Make sure we actually have completed events...
+    if (thunderdome->get_num_events() == 0) {
+        std::cout << "No events to display" << std::endl;
+        return;
+    }
+    event_display->Reset();
+    auto last_event = thunderdome->get_event(event_drawn);
+    std::cout << "\nDrawing event " << event_drawn << std::endl;
+    event_drawn++;
+    // std::cerr << "last event: " << thunderdome->get_num_events() - 1 << std::endl;
+    uint32_t fpga_factors[4] = {1, 3, 0, 2};
+    for (auto event : last_event) {
+        auto fpga = event.get_fpga_id();
+        // std::cerr << "trying fpga " << fpga << std::endl;
+        auto num_channels = configuration::get_instance()->NUM_CHANNELS * configuration::get_instance()->NUM_ASIC;
+        for (int channel = 0; channel < num_channels; channel++) {
+            // std::cerr << "trying channel " << channel << std::endl;
+            auto c = event.get_channel(channel);
+            if (c != nullptr) {
+                if (!c->is_complete()) {
+                    std::cerr << "Incomplete channel event" << std::endl;
+                    continue;
+                }
+                auto channel_id = channel_map[channel % configuration::get_instance()->NUM_CHANNELS];
+                if (channel_id < 0) {   // We record more channels than we use
+                    continue;
+                }
+                auto asic = channel >= configuration::get_instance()->NUM_CHANNELS ? 1 : 0;
+                auto x = get_channel_x(channel
+                );
+                auto y = get_channel_y(channel);
+                auto z = fpga_factors[fpga] * 16 + 8 * asic + get_channel_z(channel % configuration::get_instance()->NUM_CHANNELS);
+                // z = get_channel_z(channel % configuration::get_instance()->NUM_CHANNELS);
+
+                // std::cout << "FPGA" << fpga << "Channel" << channel << "Filling " << z << " " << x << " " << y << " " << c->get_max_sample() << std::endl;
+                event_display->Fill(z, x, y, c->get_max_sample());
+                // event_display->Fill(z, x, y, 1);
+            }
+        }
     }
 }
 
@@ -441,29 +521,45 @@ void test_reading(int run) {
     // const char *fname = "PhaseScanChannel16Phase2.txt";
     file_stream fs(fname);
     uint8_t buffer[configuration::get_instance()->PACKET_SIZE];
+    uint32_t heartbeat_seconds = 0;
+    uint32_t heartbeat_milliseconds = 0;
     // for (int iteration = 0; iteration < 50; iteration++) {
     // for (int iteration = 0; iteration < 61100; iteration++) {
+    bool all_events_built = false;
     for (int iteration = 0; iteration < 10000000; iteration++) {
         if (stop) {
             break;
         }
         s->ProcessRequests();
         if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_time).count() > 4) {
+            std::cout << "Building events...";
+            m->build_events();
+            std::cout << " done!" << std::endl;
             std::cout << "Updating canvases...";
             fs.print_packet_numbers();
             m->update_builder_graphs();
             m->update_canvases();
             gSystem->ProcessEvents();
             start_time = std::chrono::high_resolution_clock::now();
+            // m->make_event_display();
             std::cout << " done!" << std::endl;
+            all_events_built = true;
         }
         int good_data = fs.read_packet(buffer);
         if (!good_data) {
+            if (all_events_built) {
+                std::cout << "All events built, exiting..." << std::endl;
+                break;
+            }
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             continue;
         }
+        all_events_built = false;
         if (good_data == 2) {
             // std::cout << "Heartbeat packet" << std::endl;
+            heartbeat_seconds = bit_converter(buffer, 12, false);
+            heartbeat_milliseconds = bit_converter(buffer, 16, false);
+            // std::cout << "Heartbeat: " << heartbeat_seconds << "." << heartbeat_milliseconds << std::endl;
             continue;
         }
         std::vector<line> lines(36);    // 36 lines per packet
