@@ -29,6 +29,12 @@ public:
     int MAX_TOT = 1 << 12;
     int MAX_TOA = 1 << 10;
 
+    // Detector ID
+    // 1: LFHCal
+    // 2: EEEMCal
+    // 3: FOCAL
+    int DETECTOR_ID = 0;
+
     int PACKET_SIZE = 1452;
 
 };

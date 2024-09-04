@@ -32,8 +32,11 @@ void load_configs(std::string config_file) {
                 } else if (key == "MACHINE_GUN_MAX_TIME") {
                     config->MACHINE_GUN_MAX_TIME = std::stoi(value);
                 } else if (key == "PACKET_SIZE") {
-                    config->PACKET_SIZE = std::stoi(value);
-                } else {
+                config->PACKET_SIZE = std::stoi(value);
+                } else if (key == "DETECTOR_ID") {
+                    config->DETECTOR_ID = std::stoi(value);
+                }
+                else {
                     std::cerr << "Unknown key: " << key << std::endl;
                 }
             }
@@ -48,6 +51,23 @@ void load_configs(std::string config_file) {
 void print_configs() {
     auto config = configuration::get_instance();
     // Print the configuration values
+    std::cout << "Configuring for detector ID " << config->DETECTOR_ID << ": ";
+    switch (config->DETECTOR_ID) {
+        case 1:
+            std::cout << "LFHCal" << std::endl;
+            break;
+        case 2:
+            std::cout << "EEEMCal" << std::endl;
+            break;
+        case 3:
+            std::cout << "FOCAL" << std::endl;
+            break;
+        default:
+            std::cout << "Unknown" << std::endl;
+            throw std::runtime_error("Unknown detector ID");
+            break;
+    }
+
     std::cout << "Configuration values:" << std::endl;
     std::cout << "NUM_LINES: " << config->NUM_LINES << std::endl;
     std::cout << "NUM_FPGA: " << config->NUM_FPGA << std::endl;
