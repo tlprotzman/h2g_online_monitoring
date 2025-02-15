@@ -19,7 +19,8 @@ channel_stream::channel_stream(int fpga_id, int asic_id, int channel, TH2 *adc_p
     events = 0;
     current_event = nullptr;
     
-    adc_spectra = new TH1D(Form("adc_spectra_%d_%d_%d", fpga_id, asic_id, channel), Form("ADC Spectra FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), config->MAX_ADC/2, 0, config->MAX_ADC);
+		//adc_spectra = new TH1D(Form("adc_spectra_%d_%d_%d", fpga_id, asic_id, channel), Form("ADC Spectra FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), config->MAX_ADC/2, 0, config->MAX_ADC);
+    adc_spectra = new TH1D(Form("adc_spectra_%d_%d_%d", fpga_id, asic_id, channel), Form("ADC Spectra FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), 300, 0, 300);
     tot_spectra = new TH1D(Form("tot_spectra_%d_%d_%d", fpga_id, asic_id, channel), Form("TOT Spectra FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), config->MAX_TOT/2, 0, config->MAX_TOT);
     toa_spectra = new TH1D(Form("toa_spectra_%d_%d_%d", fpga_id, asic_id, channel), Form("TOA Spectra FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), config->MAX_TOA/2, 0, config->MAX_TOA);
     adc_spectra->SetTitle("");

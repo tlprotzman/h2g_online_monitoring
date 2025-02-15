@@ -97,10 +97,10 @@ void run_monitoring(int run) {
         }
         int good_data = fs.read_packet(buffer);
         if (!good_data) {
-            // if (all_events_built) {
-            //     std::cout << "All events built, exiting..." << std::endl;
-            //     break;
-            // }
+            if (false && all_events_built) {
+                std::cout << "All events built, exiting..." << std::endl;
+                break;
+            }
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             continue;
         }
