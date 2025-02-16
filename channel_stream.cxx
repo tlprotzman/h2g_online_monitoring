@@ -78,3 +78,10 @@ void channel_stream::fill_readouts(uint32_t adc, uint32_t tot, uint32_t toa) {
     tot_per_channel->Fill(72 * asic_id + channel, tot);
     toa_per_channel->Fill(72 * asic_id + channel, toa);
 }
+
+void channel_stream::reset() {
+    adc_spectra->Reset("ICESM");
+    tot_spectra->Reset("ICESM");
+    toa_spectra->Reset("ICESM");
+    adc_waveform->Reset("ICESM");
+}

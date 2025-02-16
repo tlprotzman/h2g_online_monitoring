@@ -8,6 +8,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TLatex.h>
+#include <TParameter.h>
 
 int channel_map[72] = {64, 63, 66, 65, 69, 70, 67, 68,
                        55, 56, 57, 58, 62, 61, 60, 59,
@@ -38,9 +39,10 @@ online_monitor::online_monitor(int run_number) {
     auto time = std::chrono::system_clock::now();
     timestamp = std::chrono::system_clock::to_time_t(time);
     output = new TFile(Form("monitoring_plots/run_%03d/run_%03d_monitoring_%d.root", run_number, run_number, timestamp), "RECREATE");
-
+    
     this->run_number = run_number;
     auto s = server::get_instance()->get_server();
+
     canvases = canvas_manager::get_instance();
     auto config = configuration::get_instance();
     for (int i = 0; i < config->NUM_FPGA; i++) {
@@ -267,9 +269,20 @@ online_monitor::online_monitor(int run_number) {
     event_display = new TH3D("event_display", Form("Run %03d Event Display", run_number), 64, 0, 64, 4, 0, 4, 2, 0, 2);
     event_display->Draw("BOX2");
     s->Register("/event_display", canvas);
+
+    // Register commands
+    TParameter<bool> *reset = new TParameter<bool>("reset", false);
+    gDirectory->GetList()->Add(reset);
+    s->Register("/", reset);
+    s->Hide("/reset");
+    s->RegisterCommand("/Clear_Histograms", "/reset/->SetVal(1);");
+    // s->SetItemField("/Clear_Histograms", "_fastcmd", "true");
+    // s->SetItemField('/Clear_Histograms", "hide", "true");')
 }
 
 online_monitor::~online_monitor() {
+    server::get_instance()->get_server()->SetTerminate();
+    server::get_instance()->kill_server();
     canvases.save_all(run_number, timestamp);
     for (int i = 0; i < configuration::get_instance()->NUM_FPGA; i++) {
         builders[i]->update_stats();
@@ -347,5 +360,32 @@ void online_monitor::make_event_display() {
                 // event_display->Fill(z, x, y, 1);
             }
         }
+    }
+}
+
+void online_monitor::check_reset() {
+    auto reset = dynamic_cast<TParameter<bool>*>(gROOT->FindObject("reset"));
+
+    if (reset != nullptr && reset->GetVal()) {
+        std::cout << "Resetting histograms..." << std::endl;
+        reset->SetVal(0);
+        for (auto hist : adc_per_channel) {
+            hist->Reset("ICESM");
+        }
+        for (auto hist : tot_per_channel) {
+            hist->Reset("ICESM");
+        }
+        for (auto hist : toa_per_channel) {
+            hist->Reset("ICESM");
+        }
+        for (int i = 0; i < configuration::get_instance()->NUM_FPGA; i++) {
+            for (int j = 0; j < configuration::get_instance()->NUM_ASIC; j++) {
+                for (int k = 0; k < 72; k++) {
+                    channels[i][j][k]->reset();
+                }
+            }
+        }
+    } else if (reset == nullptr) {
+        std::cerr << "Reset parameter not found" << std::endl;
     }
 }

@@ -28,6 +28,7 @@ Tristan Protzman, 27-08-2024
 #include <TLatex.h>
 #include <TFile.h>
 #include <THttpServer.h>
+#include <TParameter.h>
 
 #include <vector>
 #include <iostream>
@@ -45,6 +46,7 @@ void signal_handler(int signal) {
 }
 
 void run_monitoring(int run) {
+    std::cout << "huh??" << std::endl;
     auto s = server::get_instance()->get_server();
     auto start_time = std::chrono::high_resolution_clock::now();
     auto m = new online_monitor(run);
@@ -80,6 +82,8 @@ void run_monitoring(int run) {
         if (stop) {
             break;
         }
+        m->check_reset();
+
         s->ProcessRequests();
         if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - start_time).count() > 4) {
             std::cout << "Building events...";

@@ -29,4 +29,8 @@ public:
         return s;
     }
 
+    void kill_server() {
+        delete s;
+    }
+
 };

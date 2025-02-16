@@ -40,4 +40,5 @@ public:
     void update_events();
     void build_events();
     void make_event_display();
+    void check_reset();
 };

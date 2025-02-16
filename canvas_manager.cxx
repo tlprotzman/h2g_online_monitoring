@@ -4,6 +4,7 @@
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TFile.h>
+#include <TH1.h>
 
 #include <vector>
 #include <memory>
@@ -40,5 +41,17 @@ void canvas_manager::save_all(int run_number, int time) {
     std::cout << "saving " << canvases.size() << " canvases" << std::endl;
     for (int i = 0; i < canvases.size(); i++) {
         canvases[i]->SaveAs(Form("monitoring_plots/run_%03d/run_%03d_%s_%d.pdf", run_number, run_number, canvases[i]->GetName(), time));
+    }
+}
+
+void canvas_manager::clear_all() {
+    for (auto c : canvases) {
+        auto primatives = c->GetListOfPrimitives();
+        for (auto p : *primatives) {
+            if (p->InheritsFrom(TH1::Class())) {
+            auto hist = (TH1*)p;
+            hist->Reset();
+            }
+        }
     }
 }

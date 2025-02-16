@@ -8,5 +8,5 @@ server::server() {
         port = new char[6];
         strcpy(port, "12345");
     }
-    s = new THttpServer(Form("http:%s", port));
+    s = new THttpServer(Form("http:%s;rw", port));
 }

@@ -30,4 +30,5 @@ public:
     void delete_canvas(uint32_t index) { canvases.erase(canvases.begin() + index); }
     void update();
     void save_all(int run_number, int time);
+    void clear_all();
 };

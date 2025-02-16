@@ -58,6 +58,7 @@ public:
         completed_events.pop_front();
         return e;
     }
+    void reset();
 };
 
 typedef std::vector<std::vector<std::vector<channel_stream*>>> channel_stream_vector;
