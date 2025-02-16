@@ -10,7 +10,7 @@
 #include <TLatex.h>
 #include <TParameter.h>
 
-int channel_map[72] = {64, 63, 66, 65, 69, 70, 67, 68,
+int lfhcal_channel_map[72] = {64, 63, 66, 65, 69, 70, 67, 68,
                        55, 56, 57, 58, 62, 61, 60, 59,
                        45, 46, 47, 48, 52, 51, 50, 49,
                        37, 36, 39, 38, 42, 43, 40, 41,
@@ -20,15 +20,70 @@ int channel_map[72] = {64, 63, 66, 65, 69, 70, 67, 68,
                         7,  6,  5,  4,  0,  1,  2,  3,
                         -1, -1, -1, -1, -1, -1, -1, -1};
 
-int get_channel_x(int channel) {
+// EEEMCal mapping - instead of "layers", we have a single plane, where each crystal is one connector
+// FPGA IP | ID
+// 208     | 0
+// 209     | 1
+// 210     | 2
+// 211     | 3
+int eeemcal_fpga_map[25] = {0, 3, 3, 0, 3,
+                            2, 1, 1, 1, 2,
+                            2, 1, 1, 1, 3,
+                            2, 2, 1, 2, 3,
+                            2, 0, 0, 1, 2};
+
+// ASIC | ID
+// 0    | 0
+// 1    | 1
+int eeemcal_asic_map[25] = { 1, 1, 1, 0, 0,
+                             1, 1, 1, 1, 1,
+                             1, 0, 0, 0, 0,
+                             1, 0, 1, 0, 0,
+                             0, 1, 1, 0, 0};
+
+// Connector | ID
+// A        | 0
+// B        | 1
+// C        | 2
+// D        | 3
+int eeemcal_connector_map[25] = { 2,  0,  1,  0,  1,
+                                  0,  2,  0,  3,  3,
+                                  1,  2,  3,  3,  0,
+                                  2,  0,  1,  1,  2,
+                                  3,  1,  1,  1,  2};
+
+int eeemcal_16i_channel_a_map[16] = { 0,  1,  2,  3,  4,  5,  6,  7,
+                                      9, 10, 11, 12, 13, 14, 15, 16};
+
+int eeemcal_16i_channel_b_map[16] = {19, 20, 21, 22, 23, 24, 25, 26,
+                                     27, 28, 29, 30, 31, 32, 33, 34};
+
+int eeemcal_16i_channel_c_map[16] = {55, 56, 57, 58, 59, 60, 61, 62,
+                                     63, 64, 65, 66, 67, 68, 69, 70};
+
+int eeemcal_16i_channel_d_map[16] = {36, 37, 38, 39, 40, 41, 42, 43,
+                                     45, 46, 47, 48, 49, 50, 51, 52};
+
+int *eeemcal_16i_channel_map[4] = {eeemcal_16i_channel_a_map, eeemcal_16i_channel_b_map, eeemcal_16i_channel_c_map, eeemcal_16i_channel_d_map};
+
+int eeemcal_4x4_channel_a_map[4] = {0, 4, 9, 12};
+int eeemcal_4x4_channel_b_map[4] = {20, 24, 27, 31};
+int eeemcal_4x4_channel_c_map[4] = {58, 62, 65, 69};
+int eeemcal_4x4_channel_d_map[4] = {38, 42, 48, 52};
+int *eeemcal_4x4_channel_map[4] = {eeemcal_4x4_channel_a_map, eeemcal_4x4_channel_b_map, eeemcal_4x4_channel_c_map, eeemcal_4x4_channel_d_map};
+
+int eeemcal_16p_channel_map[4] = {6, 26, 63, 46};
+
+
+int lfhcal_get_channel_x(int channel) {
     return channel % 4;
 }
 
-int get_channel_y(int channel) {
+int lfhcal_get_channel_y(int channel) {
     return (channel % 8) > 3 ? 1 : 0;
 }
 
-int get_channel_z(int channel) {
+int lfhcal_get_channel_z(int channel) {
     return channel / 8;
 } 
 
@@ -46,15 +101,15 @@ online_monitor::online_monitor(int run_number) {
     canvases = canvas_manager::get_instance();
     auto config = configuration::get_instance();
     for (int i = 0; i < config->NUM_FPGA; i++) {
-        adc_per_channel.push_back(new TH2D(Form("adc_per_channel_%d", i), Form("Run %03d ADC per Channel FPGA %d", run_number, i), 144, 0, 144, 1024, 0, config->MAX_ADC));
-        tot_per_channel.push_back(new TH2D(Form("tot_per_channel_%d", i), Form("Run %03d TOT per Channel FPGA %d", run_number, i), 144, 0, 144, 1024, 0, config->MAX_TOT));
-        toa_per_channel.push_back(new TH2D(Form("toa_per_channel_%d", i), Form("Run %03d TOA per Channel FPGA %d", run_number, i), 144, 0, 144, 1024, 0, config->MAX_TOA));
-        s->Register("/qa_plots/graphs/adc", adc_per_channel.back());
-        s->Register("/qa_plots/graphs/tot", tot_per_channel.back());
-        s->Register("/qa_plots/graphs/toa", toa_per_channel.back());
+        adc_per_channel.push_back(new TH2D(Form("strip_adc_per_channel_%d", i), Form("Run %03d ADC per Channel FPGA %d", run_number, i), 144, 0, 144, 1024, 0, config->MAX_ADC));
+        tot_per_channel.push_back(new TH2D(Form("strip_tot_per_channel_%d", i), Form("Run %03d TOT per Channel FPGA %d", run_number, i), 144, 0, 144, 1024, 0, config->MAX_TOT));
+        toa_per_channel.push_back(new TH2D(Form("strip_toa_per_channel_%d", i), Form("Run %03d TOA per Channel FPGA %d", run_number, i), 144, 0, 144, 1024, 0, config->MAX_TOA));
+        s->Register("/QA Plots/Spectra/adc", adc_per_channel.back());
+        s->Register("/QA Plots/Spectra/tot", tot_per_channel.back());
+        s->Register("/QA Plots/Spectra/toa", toa_per_channel.back());
         int c = canvases.new_canvas(Form("FPGA_%i", i), Form("FPGA %i", i), 1200, 800);
         auto canvas = canvases.get_canvas(c);
-        s->Register("/qa_plots/canvases", canvas);
+        s->Register("/QA Plots/FPGA Summaries", canvas);
 
         canvas->Divide(1, 3, 0, 0);
         canvas->cd(1);
@@ -117,19 +172,19 @@ online_monitor::online_monitor(int run_number) {
         for (int j = 0; j < config->NUM_ASIC; j++) {
             adc_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("adc_fpga_%d_asic_%d", i, j), Form("ADC Spectra FPGA %d ASIC %d", i, j), 1200, 800);
             auto c = canvases.get_canvas(adc_canvas[i * config->NUM_ASIC + j]);
-            s->Register("/qa_plots/unordered", c);
+            s->Register("/QA Plots/Spectra/adc", c);
             c->Divide(9, 8, 0, 0);
             waveform_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("waveform_fpga_%d_asic_%d", i, j), Form("Waveform FPGA %d ASIC %d", i, j), 1200, 800);
             c = canvases.get_canvas(waveform_canvas[i * config->NUM_ASIC + j]);
-            s->Register("/qa_plots/unordered", c);
+            s->Register("/QA Plots/Waveform", c);
             c->Divide(9, 8, 0, 0);
             tot_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("tot_fpga_%d_asic_%d", i, j), Form("TOT Spectra FPGA %d ASIC %d", i, j), 1200, 800);
             c = canvases.get_canvas(tot_canvas[i * config->NUM_ASIC + j]);
-            s->Register("/qa_plots/unordered", c);
+            s->Register("/QA Plots/Spectra/tot", c);
             c->Divide(9, 8, 0, 0);
             toa_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("toa_fpga_%d_asic_%d", i, j), Form("TOA Spectra FPGA %d ASIC %d", i, j), 1200, 800);
             c = canvases.get_canvas(toa_canvas[i * config->NUM_ASIC + j]);
-            s->Register("/qa_plots/unordered", c);
+            s->Register("/QA Plots/Spectra/toa", c);
             c->Divide(9, 8, 0, 0);
         }
     }
@@ -175,100 +230,277 @@ online_monitor::online_monitor(int run_number) {
             }
         }
     }
-
-    uint32_t ordered_adc_canvas[config->NUM_FPGA * config->NUM_ASIC];
-    uint32_t ordered_waveform_canvas[config->NUM_FPGA * config->NUM_ASIC];
-    uint32_t ordered_tot_canvas[config->NUM_FPGA * config->NUM_ASIC];
-    uint32_t ordered_toa_canvas[config->NUM_FPGA * config->NUM_ASIC];
-    uint32_t adc_max_canvas[config->NUM_FPGA * config->NUM_ASIC];
-    for (int i = 0; i < config->NUM_FPGA; i++) {
-        for (int j = 0; j < config->NUM_ASIC; j++) {
-            ordered_adc_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("ordered_adc_fpga_%d_asic_%d", i, j), Form("ADC Spectra FPGA %d ASIC %d", i, j), 1200, 800);
-            auto c = canvases.get_canvas(ordered_adc_canvas[i * config->NUM_ASIC + j]);
-            s->Register("/qa_plots/ordered", c);
-            c->Divide(8, 8, 0, 0);
-            ordered_waveform_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("ordered_waveform_fpga_%d_asic_%d", i, j), Form("Waveform FPGA %d ASIC %d", i, j), 1200, 800);
-            c = canvases.get_canvas(ordered_waveform_canvas[i * config->NUM_ASIC + j]);
-            s->Register("/qa_plots/ordered", c);
-            c->Divide(8, 8, 0, 0);
-            adc_max_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("adc_max_fpga_%d_asic_%d", i, j), Form("ADC Max FPGA %d ASIC %d", i, j), 1200, 800);
-            c = canvases.get_canvas(adc_max_canvas[i * config->NUM_ASIC + j]);
-            s->Register("/qa_plots/ordered", c);
-            c->Divide(8, 8, 0, 0);
-            ordered_tot_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("ordered_tot_fpga_%d_asic_%d", i, j), Form("TOT Spectra FPGA %d ASIC %d", i, j), 1200, 800);
-            c = canvases.get_canvas(ordered_tot_canvas[i * config->NUM_ASIC + j]);
-            s->Register("/qa_plots/ordered", c);
-            c->Divide(8, 8, 0, 0);
-            ordered_toa_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("ordered_toa_fpga_%d_asic_%d", i, j), Form("TOA Spectra FPGA %d ASIC %d", i, j), 1200, 800);
-            c = canvases.get_canvas(ordered_toa_canvas[i * config->NUM_ASIC + j]);
-            s->Register("/qa_plots/ordered", c);
-            c->Divide(8, 8, 0, 0);
+    
+    if (config->DETECTOR_ID == 1) { // LFHCAL Configuration
+        uint32_t ordered_adc_canvas[config->NUM_FPGA * config->NUM_ASIC];
+        uint32_t ordered_waveform_canvas[config->NUM_FPGA * config->NUM_ASIC];
+        uint32_t ordered_tot_canvas[config->NUM_FPGA * config->NUM_ASIC];
+        uint32_t ordered_toa_canvas[config->NUM_FPGA * config->NUM_ASIC];
+        uint32_t adc_max_canvas[config->NUM_FPGA * config->NUM_ASIC];
+        for (int i = 0; i < config->NUM_FPGA; i++) {
+            for (int j = 0; j < config->NUM_ASIC; j++) {
+                ordered_adc_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("ordered_adc_fpga_%d_asic_%d", i, j), Form("ADC Spectra FPGA %d ASIC %d", i, j), 1200, 800);
+                auto c = canvases.get_canvas(ordered_adc_canvas[i * config->NUM_ASIC + j]);
+                s->Register("/LFHCal", c);
+                c->Divide(8, 8, 0, 0);
+                ordered_waveform_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("ordered_waveform_fpga_%d_asic_%d", i, j), Form("Waveform FPGA %d ASIC %d", i, j), 1200, 800);
+                c = canvases.get_canvas(ordered_waveform_canvas[i * config->NUM_ASIC + j]);
+                s->Register("/LFHCal", c);
+                c->Divide(8, 8, 0, 0);
+                adc_max_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("adc_max_fpga_%d_asic_%d", i, j), Form("ADC Max FPGA %d ASIC %d", i, j), 1200, 800);
+                c = canvases.get_canvas(adc_max_canvas[i * config->NUM_ASIC + j]);
+                s->Register("/LFHCal", c);
+                c->Divide(8, 8, 0, 0);
+                ordered_tot_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("ordered_tot_fpga_%d_asic_%d", i, j), Form("TOT Spectra FPGA %d ASIC %d", i, j), 1200, 800);
+                c = canvases.get_canvas(ordered_tot_canvas[i * config->NUM_ASIC + j]);
+                s->Register("/LFHCal", c);
+                c->Divide(8, 8, 0, 0);
+                ordered_toa_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("ordered_toa_fpga_%d_asic_%d", i, j), Form("TOA Spectra FPGA %d ASIC %d", i, j), 1200, 800);
+                c = canvases.get_canvas(ordered_toa_canvas[i * config->NUM_ASIC + j]);
+                s->Register("/LFHCal", c);
+                c->Divide(8, 8, 0, 0);
+            }
         }
-    }
-    for (int fpga = 0; fpga < config->NUM_FPGA; fpga++) {
-        for (int asic = 0; asic < config->NUM_ASIC; asic++) {
-            for (int channel = 0; channel < 64; channel++) {
-                auto c = canvases.get_canvas(ordered_adc_canvas[fpga * config->NUM_ASIC + asic]);
-                c->cd(channel + 1);
-                channels[fpga][asic][channel_map[channel]]->draw_adc();
-                text->SetTextAlign(33);
-                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
-                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
-                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
-                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_map[channel]));
-                gPad->SetLogy();
-                
-                c = canvases.get_canvas(ordered_waveform_canvas[fpga * config->NUM_ASIC + asic]);
-                c->cd(channel + 1);
-                channels[fpga][asic][channel_map[channel]]->draw_waveform();
-                text->SetTextAlign(33);
-                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
-                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
-                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
-                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_map[channel]));
-                gPad->SetLogz();
+        for (int fpga = 0; fpga < config->NUM_FPGA; fpga++) {
+            for (int asic = 0; asic < config->NUM_ASIC; asic++) {
+                for (int channel = 0; channel < 64; channel++) {
+                    auto c = canvases.get_canvas(ordered_adc_canvas[fpga * config->NUM_ASIC + asic]);
+                    c->cd(channel + 1);
+                    channels[fpga][asic][lfhcal_channel_map[channel]]->draw_adc();
+                    text->SetTextAlign(33);
+                    text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                    text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
+                    text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
+                    text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", lfhcal_channel_map[channel]));
+                    gPad->SetLogy();
+                    
+                    c = canvases.get_canvas(ordered_waveform_canvas[fpga * config->NUM_ASIC + asic]);
+                    c->cd(channel + 1);
+                    channels[fpga][asic][lfhcal_channel_map[channel]]->draw_waveform();
+                    text->SetTextAlign(33);
+                    text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                    text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
+                    text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
+                    text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", lfhcal_channel_map[channel]));
+                    gPad->SetLogz();
 
-                c = canvases.get_canvas(adc_max_canvas[fpga * config->NUM_ASIC + asic]);
-                c->cd(channel + 1);
-                channels[fpga][asic][channel_map[channel]]->draw_max();
-                text->SetTextAlign(33);
-                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
-                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
-                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
-                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_map[channel]));
-                text->DrawLatexNDC(0.95, 0.43, Form("max(samples) - samples[0]"));
-                gPad->SetLogy();
+                    c = canvases.get_canvas(adc_max_canvas[fpga * config->NUM_ASIC + asic]);
+                    c->cd(channel + 1);
+                    channels[fpga][asic][lfhcal_channel_map[channel]]->draw_max();
+                    text->SetTextAlign(33);
+                    text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                    text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
+                    text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
+                    text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", lfhcal_channel_map[channel]));
+                    text->DrawLatexNDC(0.95, 0.43, Form("max(samples) - samples[0]"));
+                    gPad->SetLogy();
 
-                c = canvases.get_canvas(ordered_tot_canvas[fpga * config->NUM_ASIC + asic]);
-                c->cd(channel + 1);
-                channels[fpga][asic][channel_map[channel]]->draw_tot();
-                text->SetTextAlign(33);
-                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
-                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
-                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
-                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_map[channel]));
-                gPad->SetLogy();
+                    c = canvases.get_canvas(ordered_tot_canvas[fpga * config->NUM_ASIC + asic]);
+                    c->cd(channel + 1);
+                    channels[fpga][asic][lfhcal_channel_map[channel]]->draw_tot();
+                    text->SetTextAlign(33);
+                    text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                    text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
+                    text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
+                    text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", lfhcal_channel_map[channel]));
+                    gPad->SetLogy();
 
-                c = canvases.get_canvas(ordered_toa_canvas[fpga * config->NUM_ASIC + asic]);
-                c->cd(channel + 1);
-                channels[fpga][asic][channel_map[channel]]->draw_toa();
-                text->SetTextAlign(33);
-                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
-                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
-                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
-                gPad->SetLogy();
-
-
+                    c = canvases.get_canvas(ordered_toa_canvas[fpga * config->NUM_ASIC + asic]);
+                    c->cd(channel + 1);
+                    channels[fpga][asic][lfhcal_channel_map[channel]]->draw_toa();
+                    text->SetTextAlign(33);
+                    text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                    text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
+                    text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
+                    gPad->SetLogy();
+                }
             }
         }
     }
+
+    else if (config->DETECTOR_ID == 2) { // EEEMCal Configuration
+        // 16 individual readout
+        // Let's try to put everything on one canvas....
+        uint32_t waveform_mega__canvas = canvases.new_canvas("Waveforms_eeemcal_individual_readout", "Individual Readout", 1200, 800);
+        auto c = canvases.get_canvas(waveform_mega__canvas);
+        s->Register("/EEEMCal/16 Individual", c);
+        c->Divide(5, 5, 0.0002, 0.0002);
+        for (int i = 0; i < 25; i++) {
+            c->cd(i + 1);
+            gPad->Divide(4, 4, 0, 0);
+            for (int sipm = 0; sipm < 16; sipm++) {
+                c->cd(i + 1);
+                gPad->cd(sipm + 1);
+                int channel_fpga = eeemcal_fpga_map[i];
+                int channel_asic = eeemcal_asic_map[i];
+                int channel_channel = eeemcal_16i_channel_map[eeemcal_connector_map[i]][sipm];
+                channels[channel_fpga][channel_asic][channel_channel]->draw_waveform();
+                // text->SetTextAlign(33);
+                // text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                // text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", channel_fpga));
+                // text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
+                // text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
+                // gPad->SetLogz();
+            }
+        }
+
+        for (int sipm = 0; sipm < 16; sipm++) {
+            uint32_t waveform_individual_readout_canvas = canvases.new_canvas(Form("Waveforms_eeemcal_individual_readout_SiPM%d", sipm), "Individual Readout", 1200, 800);
+            c = canvases.get_canvas(waveform_individual_readout_canvas);
+            s->Register(Form("/EEEMCal/16 Individual/SiPM %d", sipm), c);
+            c->Divide(5, 5, 0, 0);
+            for (int i = 0; i < 25; i++) {
+                c->cd(i + 1);
+                int channel_fpga = eeemcal_fpga_map[i];
+                int channel_asic = eeemcal_asic_map[i];
+                int channel_channel = eeemcal_16i_channel_map[eeemcal_connector_map[i]][sipm];
+                channels[channel_fpga][channel_asic][channel_channel]->draw_waveform();
+                text->SetTextAlign(33);
+                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", channel_fpga));
+                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
+                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
+                gPad->SetLogz();
+            }
+
+            uint32_t adc_individual_readout_canvas = canvases.new_canvas(Form("ADC_eeemcal_individual_readout_SiPM%d", sipm), "Individual Readout", 1200, 800);
+            c = canvases.get_canvas(adc_individual_readout_canvas);
+            s->Register(Form("/EEEMCal/16 Individual/SiPM %d", sipm), c);
+            c->Divide(5, 5, 0, 0);
+            for (int i = 0; i < 25; i++) {
+                c->cd(i + 1);
+                int channel_fpga = eeemcal_fpga_map[i];
+                int channel_asic = eeemcal_asic_map[i];
+                int channel_channel = eeemcal_16i_channel_map[eeemcal_connector_map[i]][sipm];
+                channels[channel_fpga][channel_asic][channel_channel]->draw_adc();
+                text->SetTextAlign(33);
+                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", channel_fpga));
+                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
+                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
+                gPad->SetLogy();
+            }
+
+            uint32_t tot_individual_readout_canvas = canvases.new_canvas(Form("ToT_eeemcal_individual_readout_SiPM%d", sipm), "Individual Readout", 1200, 800);
+            c = canvases.get_canvas(tot_individual_readout_canvas);
+            s->Register(Form("/EEEMCal/16 Individual/SiPM %d", sipm), c);
+            c->Divide(5, 5, 0, 0);
+            for (int i = 0; i < 25; i++) {
+                c->cd(i + 1);
+                int channel_fpga = eeemcal_fpga_map[i];
+                int channel_asic = eeemcal_asic_map[i];
+                int channel_channel = eeemcal_16i_channel_map[eeemcal_connector_map[i]][sipm];
+                channels[channel_fpga][channel_asic][channel_channel]->draw_tot();
+                text->SetTextAlign(33);
+                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", channel_fpga));
+                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
+                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
+                gPad->SetLogy();
+            }
+
+            uint32_t toa_individual_readout_canvas = canvases.new_canvas(Form("ToA_eeemcal_individual_readout_SiPM%d", sipm), "Individual Readout", 1200, 800);
+            c = canvases.get_canvas(toa_individual_readout_canvas);
+            s->Register(Form("/EEEMCal/16 Individual/SiPM %d", sipm), c);
+            c->Divide(5, 5, 0, 0);
+            for (int i = 0; i < 25; i++) {
+                c->cd(i + 1);
+                int channel_fpga = eeemcal_fpga_map[i];
+                int channel_asic = eeemcal_asic_map[i];
+                int channel_channel = eeemcal_16i_channel_map[eeemcal_connector_map[i]][sipm];
+                channels[channel_fpga][channel_asic][channel_channel]->draw_toa();
+                text->SetTextAlign(33);
+                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", channel_fpga));
+                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
+                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
+                gPad->SetLogy();
+            }
+        }
+
+
+        // 16 in parallel configurations
+        uint32_t waveform_parallel_readout_canvas = canvases.new_canvas("Waveforms_eeemcal_parallel_readout", "Parallel Readout", 1200, 800);
+        c = canvases.get_canvas(waveform_parallel_readout_canvas);
+        s->Register("/EEEMCal/16 Parallel", c);
+        c->Divide(5, 5, 0, 0);
+        for (int i = 0; i < 25; i++) {
+            c->cd(i + 1);
+            int channel_fpga = eeemcal_fpga_map[i];
+            int channel_asic = eeemcal_asic_map[i];
+            int channel_channel = eeemcal_16p_channel_map[eeemcal_connector_map[i]];
+            channels[channel_fpga][channel_asic][channel_channel]->draw_waveform();
+            text->SetTextAlign(33);
+            text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+            text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", channel_fpga));
+            text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
+            text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
+            gPad->SetLogz();
+        }
+
+        uint32_t adc_parallel_readout_canvas = canvases.new_canvas("ADC_eeemcal_parallel_readout", "Parallel Readout", 1200, 800);
+        c = canvases.get_canvas(adc_parallel_readout_canvas);
+        s->Register("/EEEMCal/16 Parallel", c);
+        c->Divide(5, 5, 0, 0);
+        for (int i = 0; i < 25; i++) {
+            c->cd(i + 1);
+            int channel_fpga = eeemcal_fpga_map[i];
+            int channel_asic = eeemcal_asic_map[i];
+            int channel_channel = eeemcal_16p_channel_map[eeemcal_connector_map[i]];
+            channels[channel_fpga][channel_asic][channel_channel]->draw_adc();
+            text->SetTextAlign(33);
+            text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+            text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", channel_fpga));
+            text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
+            text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
+            gPad->SetLogy();
+        }
+
+        uint32_t tot_parallel_readout_canvas = canvases.new_canvas("ToT_eeemcal_parallel_readout", "Parallel Readout", 1200, 800);
+        c = canvases.get_canvas(tot_parallel_readout_canvas);
+        s->Register("/EEEMCal/16 Parallel", c);
+        c->Divide(5, 5, 0, 0);
+        for (int i = 0; i < 25; i++) {
+            c->cd(i + 1);
+            int channel_fpga = eeemcal_fpga_map[i];
+            int channel_asic = eeemcal_asic_map[i];
+            int channel_channel = eeemcal_16p_channel_map[eeemcal_connector_map[i]];
+            channels[channel_fpga][channel_asic][channel_channel]->draw_tot();
+            text->SetTextAlign(33);
+            text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+            text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", channel_fpga));
+            text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
+            text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
+            gPad->SetLogy();
+        }
+
+        uint32_t toa_parallel_readout_canvas = canvases.new_canvas("ToA_eeemcal_parallel_readout", "Parallel Readout", 1200, 800);
+        c = canvases.get_canvas(toa_parallel_readout_canvas);
+        s->Register("/EEEMCal/16 Parallel", c);
+        c->Divide(5, 5, 0, 0);
+        for (int i = 0; i < 25; i++) {
+            c->cd(i + 1);
+            int channel_fpga = eeemcal_fpga_map[i];
+            int channel_asic = eeemcal_asic_map[i];
+            int channel_channel = eeemcal_16p_channel_map[eeemcal_connector_map[i]];
+            channels[channel_fpga][channel_asic][channel_channel]->draw_toa();
+            text->SetTextAlign(33);
+            text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+            text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", channel_fpga));
+            text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
+            text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
+            gPad->SetLogy();
+        }
+
+    }
+
     // Set up event display
-    event_drawn = 0;
-    auto c = canvases.new_canvas("event_display_canvas", Form("Run %03d Event Display", run_number), 1200, 800);
-    auto canvas = canvases.get_canvas(c);
-    event_display = new TH3D("event_display", Form("Run %03d Event Display", run_number), 64, 0, 64, 4, 0, 4, 2, 0, 2);
-    event_display->Draw("BOX2");
-    s->Register("/event_display", canvas);
+    // event_drawn = 0;
+    // c = canvases.new_canvas("event_display_canvas", Form("Run %03d Event Display", run_number), 1200, 800);
+    // auto canvas = canvases.get_canvas(c);
+    // event_display = new TH3D("event_display", Form("Run %03d Event Display", run_number), 64, 0, 64, 4, 0, 4, 2, 0, 2);
+    // event_display->Draw("BOX2");
+    // s->Register("/event_display", canvas);
 
     // Register commands
     TParameter<bool> *reset = new TParameter<bool>("reset", false);
@@ -344,16 +576,16 @@ void online_monitor::make_event_display() {
                     std::cerr << "Incomplete channel event" << std::endl;
                     continue;
                 }
-                auto channel_id = channel_map[channel % configuration::get_instance()->NUM_CHANNELS];
+                auto channel_id = lfhcal_channel_map[channel % configuration::get_instance()->NUM_CHANNELS];
                 if (channel_id < 0) {   // We record more channels than we use
                     continue;
                 }
                 auto asic = channel >= configuration::get_instance()->NUM_CHANNELS ? 1 : 0;
-                auto x = get_channel_x(channel
+                auto x = lfhcal_get_channel_x(channel
                 );
-                auto y = get_channel_y(channel);
-                auto z = fpga_factors[fpga] * 16 + 8 * asic + get_channel_z(channel % configuration::get_instance()->NUM_CHANNELS);
-                // z = get_channel_z(channel % configuration::get_instance()->NUM_CHANNELS);
+                auto y = lfhcal_get_channel_y(channel);
+                auto z = fpga_factors[fpga] * 16 + 8 * asic + lfhcal_get_channel_z(channel % configuration::get_instance()->NUM_CHANNELS);
+                // z = lfhcal_get_channel_z(channel % configuration::get_instance()->NUM_CHANNELS);
 
                 // std::cout << "FPGA" << fpga << "Channel" << channel << "Filling " << z << " " << x << " " << y << " " << c->get_max_sample() << std::endl;
                 event_display->Fill(z, x, y, c->get_max_sample());

@@ -61,7 +61,7 @@ void run_monitoring(int run) {
     for (int i = 0; i < 16; i++) {
         data_rates->GetXaxis()->SetBinLabel(i + 1, readout_label[i]);
     }
-    s->Register("/qa_plots/daq/", data_rates);
+    s->Register("/QA Plots/DAQ Performance/", data_rates);
 
     auto dir = getenv("DATA_DIRECTORY");
     if (dir == nullptr) {

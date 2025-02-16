@@ -33,11 +33,11 @@ channel_stream::channel_stream(int fpga_id, int asic_id, int channel, TH2 *adc_p
     adc_max = new TH1D(Form("adc_max_%d_%d_%d", fpga_id, asic_id, channel), Form("ADC Max FPGA %d ASIC %d Channel %d", fpga_id, asic_id, channel), 1024, 0, config->MAX_ADC);
 
     auto s = server::get_instance()->get_server();
-    s->Register(Form("/qa_plots/graphs/individual/fpga%d/adc", fpga_id), adc_spectra);
-    s->Register(Form("/qa_plots/graphs/individual/fpga%d/tot", fpga_id), tot_spectra);
-    s->Register(Form("/qa_plots/graphs/individual/fpga%d/toa", fpga_id), toa_spectra);
-    s->Register(Form("/qa_plots/test/fpga%d/adc_waveform", fpga_id), adc_waveform);
-    s->Register(Form("/qa_plots/test/fpga%d/adc_max", fpga_id), adc_max);
+    s->Register(Form("/QA Plots/Spectra/individual/fpga%d/adc", fpga_id), adc_spectra);
+    s->Register(Form("/QA Plots/Spectra/individual/fpga%d/tot", fpga_id), tot_spectra);
+    s->Register(Form("/QA Plots/Spectra/individual/fpga%d/toa", fpga_id), toa_spectra);
+    s->Register(Form("/QA Plots/Waveform/fpga%d/adc_waveform", fpga_id), adc_waveform);
+    s->Register(Form("/QA Plots/Waveform/fpga%d/adc_max", fpga_id), adc_max);
 
     this->adc_per_channel = adc_per_channel;
     this->tot_per_channel = tot_per_channel;

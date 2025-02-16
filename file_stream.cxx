@@ -35,7 +35,7 @@ file_stream::file_stream(const char *fname) {
         total_packets[i] = 0;
         
         canvas_id[i] = canvases.new_canvas(Form("FPGA_%i_Packets", i), Form("FPGA %i Packets", i), 1200, 800);
-        s->Register("/qa_plots/daq", canvases.get_canvas(canvas_id[i]));
+        s->Register("/QA Plots/DAQ Performance", canvases.get_canvas(canvas_id[i]));
         TLegend *legend = new TLegend(0.15, 0.75, 0.48, 0.9);
         legend->SetBorderSize(0);
         

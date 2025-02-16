@@ -126,7 +126,7 @@ event_builder::event_builder(uint32_t fpga) {
     auto canvases = canvas_manager::get_instance();
     auto s = server::get_instance()->get_server();
     auto canvas_id = canvases.new_canvas(Form("FPGA_%i_Events", fpga_id), Form("FPGA %i Events", fpga_id), 1200, 800);
-    s->Register("/qa_plots/daq", canvases.get_canvas(canvas_id));
+    s->Register("/QA Plots/DAQ Performance", canvases.get_canvas(canvas_id));
     TLegend *legend = new TLegend(0.15, 0.75, 0.48, 0.9);
     legend->SetBorderSize(0);
     
