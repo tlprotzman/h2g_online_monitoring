@@ -57,7 +57,7 @@ void line_stream::decode(int32_t asic_id, int32_t fpga_id, int32_t half_id, uint
     // once we have received all 5 lines, we need to decode it
     auto header = package[0][0];
     auto cm = package[0][1];
-    auto calib = package[3][5];
+    auto calib = package[2][4];
     auto crc_32 = package[4][7];
     int ch = 0;
     std::vector<uint32_t> channel_vec(36);
