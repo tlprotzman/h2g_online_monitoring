@@ -52,17 +52,29 @@ int eeemcal_connector_map[25] = { 2,  0,  1,  0,  1,
                                   2,  0,  1,  1,  2,
                                   3,  1,  1,  1,  2};
 
-int eeemcal_16i_channel_a_map[16] = { 0,  1,  2,  3,  4,  5,  6,  7,
-                                      9, 10, 11, 12, 13, 14, 15, 16};
+// int eeemcal_16i_channel_a_map[16] = { 0,  1,  2,  3,  4,  5,  6,  7,
+//                                       9, 10, 11, 12, 13, 14, 15, 16};
 
-int eeemcal_16i_channel_b_map[16] = {19, 20, 21, 22, 23, 24, 25, 26,
-                                     27, 28, 29, 30, 31, 32, 33, 34};
+// int eeemcal_16i_channel_b_map[16] = {19, 20, 21, 22, 23, 24, 25, 26,
+//                                      27, 28, 29, 30, 31, 32, 33, 34};
 
-int eeemcal_16i_channel_c_map[16] = {55, 56, 57, 58, 59, 60, 61, 62,
-                                     63, 64, 65, 66, 67, 68, 69, 70};
+// int eeemcal_16i_channel_c_map[16] = {55, 56, 57, 58, 59, 60, 61, 62,
+//                                      63, 64, 65, 66, 67, 68, 69, 70};
 
-int eeemcal_16i_channel_d_map[16] = {36, 37, 38, 39, 40, 41, 42, 43,
-                                     45, 46, 47, 48, 49, 50, 51, 52};
+// int eeemcal_16i_channel_d_map[16] = {36, 37, 38, 39, 40, 41, 42, 43,
+//                                      45, 46, 47, 48, 49, 50, 51, 52};
+
+int eeemcal_16i_channel_a_map[16] = { 2,  6, 11, 15,  0,  4,  9, 13,
+                                      1,  5, 10, 14,  3,  7, 12, 16};
+  
+int eeemcal_16i_channel_b_map[16] = {20, 24, 29, 33, 18, 22, 27, 31,
+                                     19, 23, 28, 32, 21, 25, 30, 34};
+  
+int eeemcal_16i_channel_c_map[16] = {67, 63, 59, 55, 69, 65, 61, 57,
+                                     70, 66, 60, 56, 68, 64, 58, 54};
+                                       
+int eeemcal_16i_channel_d_map[16] = {50, 46, 40, 36, 52, 48, 42, 38,
+                                     51, 47, 43, 39, 49, 45, 41, 37};
 
 int *eeemcal_16i_channel_map[4] = {eeemcal_16i_channel_a_map, eeemcal_16i_channel_b_map, eeemcal_16i_channel_c_map, eeemcal_16i_channel_d_map};
 

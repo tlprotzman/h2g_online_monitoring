@@ -64,7 +64,7 @@ void line_stream::decode(int32_t asic_id, int32_t fpga_id, int32_t half_id, uint
     for (int i = 0; i < config->NUM_LINES; i++) {
         for (int j = 0; j < 8; j++) {
             // Skip what we've already defined
-            if ((i == 0 && j == 0) | (i == 0 && j == 1) | (i == 3 && j == 5) | (i == 4 && j == 7)) {
+            if ((i == 0 && j == 0) | (i == 0 && j == 1) | (i == 2 && j == 4) | (i == 4 && j == 7)) {
                 continue;
             }
             channel_vec[ch] = package[i][j];
