@@ -29,7 +29,7 @@ int lfhcal_channel_map[72] = {64, 63, 66, 65, 69, 70, 67, 68,
 int eeemcal_fpga_map[25] = {0, 3, 3, 0, 3,
                             2, 1, 1, 1, 2,
                             2, 1, 1, 1, 3,
-                            2, 2, 1, 1, 3,
+                            2, 2, 1, 2, 3,
                             2, 0, 0, 1, 2};
 
 // ASIC | ID
@@ -84,7 +84,7 @@ int eeemcal_4x4_channel_c_map[4] = {58, 62, 65, 69};
 int eeemcal_4x4_channel_d_map[4] = {38, 42, 48, 52};
 int *eeemcal_4x4_channel_map[4] = {eeemcal_4x4_channel_a_map, eeemcal_4x4_channel_b_map, eeemcal_4x4_channel_c_map, eeemcal_4x4_channel_d_map};
 
-int eeemcal_16p_channel_map[4] = {6, 26, 63, 46};
+int eeemcal_16p_channel_map[4] = {6, 25, 63, 46};
 
 
 int lfhcal_get_channel_x(int channel) {
