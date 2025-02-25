@@ -78,10 +78,10 @@ int eeemcal_16i_channel_d_map[16] = {50, 46, 40, 36, 52, 48, 42, 38,
 
 int *eeemcal_16i_channel_map[4] = {eeemcal_16i_channel_a_map, eeemcal_16i_channel_b_map, eeemcal_16i_channel_c_map, eeemcal_16i_channel_d_map};
 
-int eeemcal_4x4_channel_a_map[4] = {0, 4, 9, 12};
-int eeemcal_4x4_channel_b_map[4] = {20, 24, 27, 31};
-int eeemcal_4x4_channel_c_map[4] = {58, 62, 65, 69};
-int eeemcal_4x4_channel_d_map[4] = {38, 42, 48, 52};
+int eeemcal_4x4_channel_a_map[4] = {0, 4, 9, 13};
+int eeemcal_4x4_channel_b_map[4] = {18, 22, 27, 31};
+int eeemcal_4x4_channel_c_map[4] = {69, 65, 61, 57};
+int eeemcal_4x4_channel_d_map[4] = {52, 48, 42, 38};
 int *eeemcal_4x4_channel_map[4] = {eeemcal_4x4_channel_a_map, eeemcal_4x4_channel_b_map, eeemcal_4x4_channel_c_map, eeemcal_4x4_channel_d_map};
 
 int eeemcal_16p_channel_map[4] = {6, 25, 63, 46};
@@ -352,7 +352,7 @@ online_monitor::online_monitor(int run_number) {
                 // text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", channel_fpga));
                 // text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
                 // text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
-                // gPad->SetLogz();
+                gPad->SetLogz();
             }
         }
 
@@ -502,6 +502,129 @@ online_monitor::online_monitor(int run_number) {
             text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
             text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
             gPad->SetLogy();
+        }
+
+        // Set up 4x4 canvases
+        waveform_mega__canvas = canvases.new_canvas("realistic_waveforms_eeemcal_4x4_readout_realistic", "4x4 Readout, Actual", 1200, 800);
+        c = canvases.get_canvas(waveform_mega__canvas);
+        s->Register("/EEEMCal/4x4 Readout", c);
+        c->Divide(5, 5, 0.0002, 0.0002);
+        for (int i = 0; i < 25; i++) {
+            c->cd(i + 1);
+            gPad->Divide(4, 1, 0, 0);
+            for (int sipm = 0; sipm < 4; sipm++) {
+                c->cd(i + 1);
+                gPad->cd(sipm + 1);
+                int channel_fpga = eeemcal_fpga_map[i];
+                int channel_asic = eeemcal_asic_map[i];
+                int channel_channel = eeemcal_4x4_channel_map[eeemcal_connector_map[i]][sipm];
+                channels[channel_fpga][channel_asic][channel_channel]->draw_waveform();
+                text->SetTextAlign(33);
+                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", channel_fpga));
+                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
+                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
+                gPad->SetLogz();
+            }
+        }
+
+        waveform_mega__canvas = canvases.new_canvas("useful_aveforms_eeemcal_4x4_readout", "4x4 Readout, Useful", 1200, 800);
+        c = canvases.get_canvas(waveform_mega__canvas);
+        s->Register("/EEEMCal/4x4 Readout", c);
+        c->Divide(5, 5, 0.0002, 0.0002);
+        for (int i = 0; i < 25; i++) {
+            c->cd(i + 1);
+            gPad->Divide(2, 2, 0, 0);
+            for (int sipm = 0; sipm < 4; sipm++) {
+                c->cd(i + 1);
+                gPad->cd(sipm + 1);
+                int channel_fpga = eeemcal_fpga_map[i];
+                int channel_asic = eeemcal_asic_map[i];
+                int channel_channel = eeemcal_4x4_channel_map[eeemcal_connector_map[i]][sipm];
+                channels[channel_fpga][channel_asic][channel_channel]->draw_waveform();
+                text->SetTextAlign(33);
+                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", channel_fpga));
+                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
+                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
+                gPad->SetLogz();
+            }
+        }
+
+
+
+        for (int sipm = 0; sipm < 4; sipm++) {
+            uint32_t waveform_4x4_readout_canvas = canvases.new_canvas(Form("Waveforms_eeemcal_4x4_readout_SiPM%d", sipm), "4x4 Readout", 1200, 800);
+            c = canvases.get_canvas(waveform_4x4_readout_canvas);
+            s->Register(Form("/EEEMCal/4x4 Readout/SiPM %d", sipm), c);
+            c->Divide(5, 5, 0, 0);
+            for (int i = 0; i < 25; i++) {
+                c->cd(i + 1);
+                int channel_fpga = eeemcal_fpga_map[i];
+                int channel_asic = eeemcal_asic_map[i];
+                int channel_channel = eeemcal_4x4_channel_map[eeemcal_connector_map[i]][sipm];
+                channels[channel_fpga][channel_asic][channel_channel]->draw_waveform();
+                text->SetTextAlign(33);
+                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", channel_fpga));
+                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
+                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
+                gPad->SetLogz();
+            }
+
+            uint32_t adc_4x4_readout_canvas = canvases.new_canvas(Form("ADC_eeemcal_4x4_readout_SiPM%d", sipm), "4x4 Readout", 1200, 800);
+            c = canvases.get_canvas(adc_4x4_readout_canvas);
+            s->Register(Form("/EEEMCal/4x4 Readout/SiPM %d", sipm), c);
+            c->Divide(5, 5, 0, 0);
+            for (int i = 0; i < 25; i++) {
+                c->cd(i + 1);
+                int channel_fpga = eeemcal_fpga_map[i];
+                int channel_asic = eeemcal_asic_map[i];
+                int channel_channel = eeemcal_4x4_channel_map[eeemcal_connector_map[i]][sipm];
+                channels[channel_fpga][channel_asic][channel_channel]->draw_adc();
+                text->SetTextAlign(33);
+                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", channel_fpga));
+                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
+                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
+                gPad->SetLogy();
+            }
+
+            uint32_t tot_4x4_readout_canvas = canvases.new_canvas(Form("ToT_eeemcal_4x4_readout_SiPM%d", sipm), "4x4 Readout", 1200, 800);
+            c = canvases.get_canvas(tot_4x4_readout_canvas);
+            s->Register(Form("/EEEMCal/4x4 Readout/SiPM %d", sipm), c);
+            c->Divide(5, 5, 0, 0);
+            for (int i = 0; i < 25; i++) {
+                c->cd(i + 1);
+                int channel_fpga = eeemcal_fpga_map[i];
+                int channel_asic = eeemcal_asic_map[i];
+                int channel_channel = eeemcal_4x4_channel_map[eeemcal_connector_map[i]][sipm];
+                channels[channel_fpga][channel_asic][channel_channel]->draw_tot();
+                text->SetTextAlign(33);
+                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", channel_fpga));
+                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
+                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
+                gPad->SetLogy();
+            }
+
+            uint32_t toa_4x4_readout_canvas = canvases.new_canvas(Form("ToA_eeemcal_4x4_readout_SiPM%d", sipm), "4x4 Readout", 1200, 800);
+            c = canvases.get_canvas(toa_4x4_readout_canvas);
+            s->Register(Form("/EEEMCal/4x4 Readout/SiPM %d", sipm), c);
+            c->Divide(5, 5, 0, 0);
+            for (int i = 0; i < 25; i++) {
+                c->cd(i + 1);
+                int channel_fpga = eeemcal_fpga_map[i];
+                int channel_asic = eeemcal_asic_map[i];
+                int channel_channel = eeemcal_4x4_channel_map[eeemcal_connector_map[i]][sipm];
+                channels[channel_fpga][channel_asic][channel_channel]->draw_toa();
+                text->SetTextAlign(33);
+                text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
+                text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", channel_fpga));
+                text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
+                text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
+                gPad->SetLogy();
+            }
         }
 
     }
