@@ -78,8 +78,8 @@ int eeemcal_16i_channel_d_map[16] = {50, 46, 40, 36, 52, 48, 42, 38,
 
 int *eeemcal_16i_channel_map[4] = {eeemcal_16i_channel_a_map, eeemcal_16i_channel_b_map, eeemcal_16i_channel_c_map, eeemcal_16i_channel_d_map};
 
-int eeemcal_4x4_channel_a_map[4] = {0, 4, 9, 13};
-int eeemcal_4x4_channel_b_map[4] = {18, 22, 27, 31};
+int eeemcal_4x4_channel_a_map[4] = {0, 4, 9, 12};
+int eeemcal_4x4_channel_b_map[4] = {19, 23, 27, 31};
 int eeemcal_4x4_channel_c_map[4] = {69, 65, 61, 57};
 int eeemcal_4x4_channel_d_map[4] = {52, 48, 42, 38};
 int *eeemcal_4x4_channel_map[4] = {eeemcal_4x4_channel_a_map, eeemcal_4x4_channel_b_map, eeemcal_4x4_channel_c_map, eeemcal_4x4_channel_d_map};
