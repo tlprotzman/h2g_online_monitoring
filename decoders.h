@@ -20,3 +20,5 @@ uint32_t bit_converter(uint8_t *buffer, int start, bool big_endian = true);
 void decode_line(line &p, uint8_t *buffer);
 int decode_packet(std::vector<line> &lines, uint8_t *buffer);
 void process_lines(std::vector<line> &lines, line_stream_vector &streams, TH1 *data_rates);
+int decode_packet_v012(uint8_t *buffer, line_stream_vector &streams);
+

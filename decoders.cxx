@@ -2,6 +2,8 @@
 
 #include "line_stream.h"
 #include "channel_stream.h"
+#include "configuration.h"
+
 
 #include <cstdint>
 #include <iostream>
@@ -63,6 +65,15 @@ uint32_t bit_converter(uint8_t *buffer, int start, bool big_endian) {
     return (buffer[start + 3] << 24) + (buffer[start + 2] << 16) + (buffer[start + 1] << 8) + buffer[start];
 }
 
+uint64_t bit_converter_64(uint8_t *buffer, int start, bool big_endian) {
+    if (big_endian) {
+        return ((uint64_t)buffer[start] << 56) + ((uint64_t)buffer[start + 1] << 48) + ((uint64_t)buffer[start + 2] << 40) + ((uint64_t)buffer[start + 3] << 32) +
+               ((uint64_t)buffer[start + 4] << 24) + ((uint64_t)buffer[start + 5] << 16) + ((uint64_t)buffer[start + 6] << 8) + (uint64_t)buffer[start + 7];
+    }
+    return ((uint64_t)buffer[start + 7] << 56) + ((uint64_t)buffer[start + 6] << 48) + ((uint64_t)buffer[start + 5] << 40) + ((uint64_t)buffer[start + 4] << 32) +
+           ((uint64_t)buffer[start + 3] << 24) + ((uint64_t)buffer[start + 2] << 16) + ((uint64_t)buffer[start + 1] << 8) + (uint64_t)buffer[start];
+}
+
 void decode_line(line &p, uint8_t *buffer) {
     p.asic_id = decode_asic(buffer[0]);
     p.fpga_id = decode_fpga(buffer[1]);
@@ -91,4 +102,51 @@ void process_lines(std::vector<line> &lines, line_stream_vector &streams, TH1 *d
         data_rates->Fill(4 * line.fpga_id + 2 * line.asic_id + line.half_id);
         streams[line.fpga_id][line.asic_id][line.half_id]->add_line(line);
     }
+}
+
+int decode_packet_v012(uint8_t *buffer, line_stream_vector &streams) {
+    auto config = configuration::get_instance();
+    int decode_ptr = 0;
+    // Increment pointer until we find 0xAA5A
+    while (decode_ptr < config->PACKET_SIZE - 4) {
+        if (buffer[decode_ptr] == 0xAA && buffer[decode_ptr + 1] == 0x5A) {
+            break;
+        }
+        decode_ptr++;
+    }
+
+    // The next 32*6=192 bytes are the data for 6 "lines"
+    // Make sure we can actully read 192 bytes
+    if (decode_ptr + 192 > config->PACKET_SIZE) {
+        return -1;
+    }
+    // Get the asic, fpga, half, etc from the header
+    int asic_id = buffer[decode_ptr + 2] & 0x01111; // lower 4 bits
+    int fpga_id = (buffer[decode_ptr + 2] >> 4);     // upper 4 bits
+    int half = decode_half(buffer[decode_ptr + 3]);
+    int trg_in_ctr = bit_converter(buffer, decode_ptr + 4, false);
+    int trg_out_ctr = bit_converter(buffer, decode_ptr + 8, false);
+    int event_ctr = bit_converter(buffer, decode_ptr + 12, false);
+    uint64_t timestamp = bit_converter_64(buffer, decode_ptr + 16, false);
+    // the last 8 bits are spare for now
+    decode_ptr += 32;
+
+    // Make a fake line stream to process this group of data
+    for (int line_num = 0; line_num < 5; line_num++) {
+        line l;
+        l.asic_id = asic_id;
+        l.fpga_id = fpga_id;
+        l.half_id = half;
+        l.line_number = line_num;
+        l.timestamp = timestamp & 0xFFFFFFFF; // lower 32 bits
+        // Each line has 32 bytes of data (8 words)
+        for (int word = 0; word < 8; word++) {
+            l.package[word] = bit_converter(buffer, decode_ptr + word * 4, false);
+        }
+        streams[l.fpga_id][l.asic_id][l.half_id]->add_line(l);
+        decode_ptr += 32;
+    }
+    // On the last pass through, the line stream should have processed the full package?
+
+    return 0;
 }

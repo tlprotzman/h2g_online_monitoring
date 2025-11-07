@@ -60,6 +60,7 @@ void load_configs(std::string config_file, int run) {
     }
 
     std::ifstream runfile(run_file);
+    bool is_jumbo = false;
     if (runfile.is_open()) {
         // std::cout << "opened run file: " << run_file << std::endl;
         std::string line;
@@ -87,6 +88,16 @@ void load_configs(std::string config_file, int run) {
                 if (key == "# Generator Setting machine_gun") {
                     config->MAX_SAMPLES = std::stoi(value);
                     std::cout << "Setting MAX_SAMPLES to " << config->MAX_SAMPLES << std::endl;
+                }
+                if (key == "# Generator Setting jumbo_enable") {
+                    // 0 if off, 1 if on
+                    is_jumbo = std::stoi(value);
+                    if (is_jumbo) {
+                        config->PACKET_SIZE = 8846;
+                    } else {
+                        config->PACKET_SIZE = 1358;
+                    }
+                    std::cout << "Setting PACKET_SIZE to " << config->PACKET_SIZE << std::endl;
                 }
             }
         }

@@ -117,15 +117,20 @@ void run_monitoring(int run) {
             continue;
         }
         std::vector<line> lines(36);    // 36 lines per packet
-        decode_packet(lines, buffer);
-        process_lines(lines, m->line_streams, data_rates);
-        for (auto line : lines) {
-            line_numbers->Fill(line.line_number);
+        if (configuration::get_instance()->FILE_VERSION_MAJOR == 0 && configuration::get_instance()->FILE_VERSION_MINOR < 12) {
+            // Old format
+            decode_packet(lines, buffer);
+            process_lines(lines, m->line_streams, data_rates);
+            for (auto line : lines) {
+                line_numbers->Fill(line.line_number);
+            }
+            m->update_events();
+        } else {
+            // New format decoding can go here
+            decode_packet_v012(buffer, m->line_streams);
         }
-        m->update_events();
     }
     delete m;
-    std::cout << "Exiting cleanly, just for you Fredi!" << std::endl;
 }
 
 int Monitor(int run, std::string config_file) {
