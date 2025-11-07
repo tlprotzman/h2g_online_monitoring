@@ -133,7 +133,7 @@ int Monitor(int run, std::string config_file) {
     signal(SIGINT, signal_handler);
 
     gStyle->SetOptStat(0);
-    load_configs(config_file);  // Always load the config before starting 
+    load_configs(config_file, run);  // Always load the config before starting 
     print_configs();
     run_monitoring(run);
     return 0;

@@ -4,7 +4,7 @@
 #include <fstream>
 #include <string>
 
-void load_configs(std::string config_file) {
+void load_configs(std::string config_file, int run) {
     std::cout << "Parsing config file " << config_file << std::endl;
     auto config = configuration::get_instance();
     std::ifstream file(config_file);
@@ -45,6 +45,56 @@ void load_configs(std::string config_file) {
     } else {
         std::cerr << "Failed to open config file: " << config_file << std::endl;
     }
+
+    std::cout << "MADE IT HERE" << std::endl;
+
+    // Open the run and parse a few items out of there
+    std::string run_str = std::to_string(run);
+    if (run_str.length() < 3) run_str = std::string(3 - run_str.length(), '0') + run_str;
+    const char* data_dir_env = std::getenv("DATA_DIRECTORY");
+    std::string run_file = "Run" + run_str + ".h2g";
+    if (data_dir_env && data_dir_env[0] != '\0') {
+        std::string dir(data_dir_env);
+        if (!dir.empty() && dir.back() != '/' && dir.back() != '\\') dir.push_back('/');
+        run_file = dir + run_file;
+    }
+
+    std::ifstream runfile(run_file);
+    if (runfile.is_open()) {
+        // std::cout << "opened run file: " << run_file << std::endl;
+        std::string line;
+        // Skip two lines
+        std::getline(runfile, line);
+        std::getline(runfile, line);
+        while (std::getline(runfile, line)) {
+            // std::cout << "processing line: " << line << std::endl;
+            if (line == "##################################################") break;
+            // Look for the file version
+            std::string key, value;
+            std::size_t delimiter_pos = line.find(':');
+            if (delimiter_pos != std::string::npos) {
+                key = line.substr(0, delimiter_pos);
+                value = line.substr(delimiter_pos + 1);
+                // Do something with the key-value pair
+                if (key == "# File Version") {
+                    std::cout << "Run file version: " << value << std::endl;
+                    std::size_t dot_pos = value.find('.');
+                    if (dot_pos != std::string::npos) {
+                        config->FILE_VERSION_MAJOR = std::stoi(value.substr(0, dot_pos));
+                        config->FILE_VERSION_MINOR = std::stoi(value.substr(dot_pos + 1));
+                    }
+                }
+                if (key == "# Generator Setting machine_gun") {
+                    config->MAX_SAMPLES = std::stoi(value);
+                    std::cout << "Setting MAX_SAMPLES to " << config->MAX_SAMPLES << std::endl;
+                }
+            }
+        }
+        runfile.close();
+    } else {
+        std::cerr << "Failed to open run file: " << run_file << std::endl;
+    }
+
     std::cout << "\n\n";
     print_configs();
     std::cout << "\n\n";
@@ -55,6 +105,9 @@ void print_configs() {
     // Print the configuration values
     std::cout << "Configuring for detector ID " << config->DETECTOR_ID << ": ";
     switch (config->DETECTOR_ID) {
+        case 0: 
+            std::cout << "Generic" << std::endl;
+            break;
         case 1:
             std::cout << "LFHCal" << std::endl;
             break;

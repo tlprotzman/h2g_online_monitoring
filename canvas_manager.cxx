@@ -24,7 +24,7 @@ void canvas_manager::update() {
         c->Update();
         auto primatives = c->GetListOfPrimitives();
         for (auto p : *primatives) {
-            if (p->IsA() == TPad::Class()) {
+            if (p && p->IsA() == TPad::Class()) {
                 auto pad = (TPad*)p;
                 pad->Modified();
                 pad->Update();

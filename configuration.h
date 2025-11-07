@@ -28,6 +28,8 @@ public:
     int MAX_ADC = 1 << 10;
     int MAX_TOT = 1 << 12;
     int MAX_TOA = 1 << 10;
+    int FILE_VERSION_MAJOR = 0;
+    int FILE_VERSION_MINOR = 0;
 
     // Detector ID
     // 1: LFHCal
@@ -42,5 +44,5 @@ public:
 };
 
 
-void load_configs(std::string config_file);
+void load_configs(std::string config_file, int run);
 void print_configs();
