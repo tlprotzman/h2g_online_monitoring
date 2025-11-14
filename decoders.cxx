@@ -114,16 +114,23 @@ int decode_packet_v012(uint8_t *buffer, line_stream_vector &streams) {
         }
         decode_ptr++;
     }
+    std::cout << "Found header at byte " << decode_ptr << std::endl;
 
     // The next 32*6=192 bytes are the data for 6 "lines"
     // Make sure we can actully read 192 bytes
     if (decode_ptr + 192 > config->PACKET_SIZE) {
+        std::cerr << "Not enough data for full packet!" << std::endl;
         return -1;
     }
     // Get the asic, fpga, half, etc from the header
     int asic_id = buffer[decode_ptr + 2] & 0x01111; // lower 4 bits
     int fpga_id = (buffer[decode_ptr + 2] >> 4);     // upper 4 bits
     int half = decode_half(buffer[decode_ptr + 3]);
+    if (half == -1) {
+        std::cerr << "Invalid half ID in packet!" << std::endl;
+        return -1;
+    }
+    std::cout << "Decoding packet for FPGA " << fpga_id << ", ASIC " << asic_id << ", half " << half << std::endl;
     int trg_in_ctr = bit_converter(buffer, decode_ptr + 4, false);
     int trg_out_ctr = bit_converter(buffer, decode_ptr + 8, false);
     int event_ctr = bit_converter(buffer, decode_ptr + 12, false);
@@ -147,6 +154,7 @@ int decode_packet_v012(uint8_t *buffer, line_stream_vector &streams) {
         decode_ptr += 32;
     }
     // On the last pass through, the line stream should have processed the full package?
+    // From there, everything should just work like before
 
     return 0;
 }

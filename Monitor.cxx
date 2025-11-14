@@ -117,7 +117,7 @@ void run_monitoring(int run) {
             continue;
         }
         std::vector<line> lines(36);    // 36 lines per packet
-        if (configuration::get_instance()->FILE_VERSION_MAJOR == 0 && configuration::get_instance()->FILE_VERSION_MINOR < 12) {
+        if (configuration::get_instance()->FILE_VERSION_MAJOR == 0 && configuration::get_instance()->FILE_VERSION_MINOR < 13) {
             // Old format
             decode_packet(lines, buffer);
             process_lines(lines, m->line_streams, data_rates);
