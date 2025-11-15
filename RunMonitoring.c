@@ -2,7 +2,7 @@
 #include <TSystem.h>
 #include <THttpServer.h>
 
-void RunMonitoring(int run = 4) {
+void RunMonitoring(int run = 1) {
 	  gSystem->Load("libRHTTP.so");
     gSystem->Load("libMonitoring.so");
     // Monitor(run, "generic_20sample.cfg");
