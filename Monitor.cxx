@@ -128,6 +128,7 @@ void run_monitoring(int run) {
         } else {
             // New format decoding can go here
             decode_packet_v012(buffer, m->line_streams);
+            m->update_events();
         }
     }
     delete m;

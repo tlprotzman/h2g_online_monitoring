@@ -18,8 +18,8 @@ public:
         return instance;
     }
 
-    int NUM_FPGA = 4;
-    int NUM_ASIC = 2;
+    int NUM_FPGA = 1;
+    int NUM_ASIC = 4;
     int NUM_CHANNELS = 72;
     int NUM_LINES = 5;
 
