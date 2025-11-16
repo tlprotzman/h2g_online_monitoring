@@ -129,6 +129,7 @@ int decode_packet_v012(uint8_t *buffer, line_stream_vector &streams) {
             int trg_in_ctr = bit_converter(buffer, decode_ptr + 4, false);
             int trg_out_ctr = bit_converter(buffer, decode_ptr + 8, false);
             int event_ctr = bit_converter(buffer, decode_ptr + 12, false);
+
             uint64_t timestamp = bit_converter_64(buffer, decode_ptr + 16, false);
             // the last 8 bits are spare for now
             decode_ptr += 32;
@@ -148,8 +149,9 @@ int decode_packet_v012(uint8_t *buffer, line_stream_vector &streams) {
                 streams[l.fpga_id][l.asic_id][l.half_id]->add_line(l);
                 decode_ptr += 32;
             }
+        } else {
+            decode_ptr++;
         }
-        decode_ptr++;
     }
     
     // On the last pass through, the line stream should have processed the full package?
