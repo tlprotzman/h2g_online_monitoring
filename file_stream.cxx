@@ -91,7 +91,7 @@ file_stream::file_stream(const char *fname) {
     // read file until newline is found
     char c;
     // skip the first 21 lines... sigh.  this should be better
-    for (int i = 0; i < 21; i++) {
+    for (int i = 0; i < 23; i++) { //modified to 23 for now
         while (file.get(c) && c != '\n');
     }
 
