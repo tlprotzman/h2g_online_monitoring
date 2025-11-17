@@ -10,15 +10,26 @@
 #include <TLatex.h>
 #include <TParameter.h>
 
+// int lfhcal_channel_map[72] = {64, 63, 66, 65, 69, 70, 67, 68,
+//                        55, 56, 57, 58, 62, 61, 60, 59,
+//                        45, 46, 47, 48, 52, 51, 50, 49,
+//                        37, 36, 39, 38, 42, 43, 40, 41,
+//                        34, 33, 32, 31, 27, 28, 29, 30,
+//                        25, 26, 23, 24, 20, 19, 22, 21,
+//                        16, 14, 15, 12,  9, 11, 10, 13,
+//                         7,  6,  5,  4,  0,  1,  2,  3,
+//                         -1, -1, -1, -1, -1, -1, -1, -1};
+
 int lfhcal_channel_map[72] = {64, 63, 66, 65, 69, 70, 67, 68,
-                       55, 56, 57, 58, 62, 61, 60, 59,
+                       54, 55, 56, 57, 61, 60, 59, 58,
                        45, 46, 47, 48, 52, 51, 50, 49,
                        37, 36, 39, 38, 42, 43, 40, 41,
                        34, 33, 32, 31, 27, 28, 29, 30,
-                       25, 26, 23, 24, 20, 19, 22, 21,
+                       24, 25, 22, 23, 19, 18, 21, 20,
                        16, 14, 15, 12,  9, 11, 10, 13,
                         7,  6,  5,  4,  0,  1,  2,  3,
                         -1, -1, -1, -1, -1, -1, -1, -1};
+
 
 // EEEMCal mapping - instead of "layers", we have a single plane, where each crystal is one connector
 // FPGA IP | ID
@@ -112,10 +123,11 @@ online_monitor::online_monitor(int run_number) {
 
     canvases = canvas_manager::get_instance();
     auto config = configuration::get_instance();
+    int nCh  = 72*config->NUM_ASIC;
     for (int i = 0; i < config->NUM_FPGA; i++) {
-        adc_per_channel.push_back(new TH2D(Form("strip_adc_per_channel_%d", i), Form("Run %03d ADC per Channel FPGA %d", run_number, i), 144, 0, 144, 1024, 0, config->MAX_ADC));
-        tot_per_channel.push_back(new TH2D(Form("strip_tot_per_channel_%d", i), Form("Run %03d TOT per Channel FPGA %d", run_number, i), 144, 0, 144, 1024, 0, config->MAX_TOT));
-        toa_per_channel.push_back(new TH2D(Form("strip_toa_per_channel_%d", i), Form("Run %03d TOA per Channel FPGA %d", run_number, i), 144, 0, 144, 1024, 0, config->MAX_TOA));
+        adc_per_channel.push_back(new TH2D(Form("strip_adc_per_channel_%d", i), Form("Run %03d ADC per Channel FPGA %d", run_number, i), nCh, 0, nCh, 1024, 0, config->MAX_ADC));
+        tot_per_channel.push_back(new TH2D(Form("strip_tot_per_channel_%d", i), Form("Run %03d TOT per Channel FPGA %d", run_number, i), nCh, 0, nCh, 1024, 0, config->MAX_TOT));
+        toa_per_channel.push_back(new TH2D(Form("strip_toa_per_channel_%d", i), Form("Run %03d TOA per Channel FPGA %d", run_number, i), nCh, 0, nCh, 1024, 0, config->MAX_TOA));
         s->Register("/QA Plots/Spectra/adc", adc_per_channel.back());
         s->Register("/QA Plots/Spectra/tot", tot_per_channel.back());
         s->Register("/QA Plots/Spectra/toa", toa_per_channel.back());

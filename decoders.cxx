@@ -118,7 +118,7 @@ int decode_packet_v012(uint8_t *buffer, line_stream_vector &streams) {
                 return -1;
             }
             // Get the asic, fpga, half, etc from the header
-            int asic_id = buffer[decode_ptr + 2] & 0x01111; // lower 4 bits
+            int asic_id = buffer[decode_ptr + 2] & 0x0F; // lower 4 bits
             int fpga_id = (buffer[decode_ptr + 2] >> 4);     // upper 4 bits
             int half = decode_half(buffer[decode_ptr + 3]);
             if (half == -1) {
@@ -126,10 +126,16 @@ int decode_packet_v012(uint8_t *buffer, line_stream_vector &streams) {
                 return -1;
             }
             std::cout << "Decoding packet for FPGA " << fpga_id << ", ASIC " << asic_id << ", half " << half << std::endl;
-            int trg_in_ctr = bit_converter(buffer, decode_ptr + 4, false);
-            int trg_out_ctr = bit_converter(buffer, decode_ptr + 8, false);
-            int event_ctr = bit_converter(buffer, decode_ptr + 12, false);
-            uint64_t timestamp = bit_converter_64(buffer, decode_ptr + 16, false);
+
+            int trg_in_ctr = bit_converter(buffer, decode_ptr + 4, true);
+            int trg_out_ctr = bit_converter(buffer, decode_ptr + 8, true);
+            int event_ctr = bit_converter(buffer, decode_ptr + 12, true);
+            uint64_t timestamp = bit_converter_64(buffer, decode_ptr + 16, true);
+
+            std::cout << "in, out, evctr, tstamp: " << trg_in_ctr << "\t" << trg_out_ctr << "\t" << event_ctr << "\t" << timestamp << "\t" << (timestamp & 0xFFFFFFFF) << std::endl;
+
+
+
             // the last 8 bits are spare for now
             decode_ptr += 32;
 
@@ -143,13 +149,14 @@ int decode_packet_v012(uint8_t *buffer, line_stream_vector &streams) {
                 l.timestamp = timestamp & 0xFFFFFFFF; // lower 32 bits
                 // Each line has 32 bytes of data (8 words)
                 for (int word = 0; word < 8; word++) {
-                    l.package[word] = bit_converter(buffer, decode_ptr + word * 4, false);
+                    l.package[word] = bit_converter(buffer, decode_ptr + word * 4, true);
                 }
                 streams[l.fpga_id][l.asic_id][l.half_id]->add_line(l);
                 decode_ptr += 32;
             }
+        } else {
+            decode_ptr++;
         }
-        decode_ptr++;
     }
     
     // On the last pass through, the line stream should have processed the full package?
