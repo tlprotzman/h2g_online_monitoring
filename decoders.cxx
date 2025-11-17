@@ -118,7 +118,7 @@ int decode_packet_v012(uint8_t *buffer, line_stream_vector &streams) {
                 return -1;
             }
             // Get the asic, fpga, half, etc from the header
-            int asic_id = buffer[decode_ptr + 2] & 0x01111; // lower 4 bits
+            int asic_id = buffer[decode_ptr + 2] & 0x0F; // lower 4 bits
             int fpga_id = (buffer[decode_ptr + 2] >> 4);     // upper 4 bits
             int half = decode_half(buffer[decode_ptr + 3]);
             if (half == -1) {
@@ -132,7 +132,7 @@ int decode_packet_v012(uint8_t *buffer, line_stream_vector &streams) {
             int event_ctr = bit_converter(buffer, decode_ptr + 12, true);
             uint64_t timestamp = bit_converter_64(buffer, decode_ptr + 16, true);
 
-            std::cout << "in, out, evctr, tstamp: " << trg_in_ctr << "\t" << trg_out_ctr << "\t" << event_ctr << "\t" << timestamp << std::endl;
+            std::cout << "in, out, evctr, tstamp: " << trg_in_ctr << "\t" << trg_out_ctr << "\t" << event_ctr << "\t" << timestamp << "\t" << (timestamp & 0xFFFFFFFF) << std::endl;
 
 
 
