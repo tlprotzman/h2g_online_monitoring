@@ -126,19 +126,13 @@ int decode_packet_v012(uint8_t *buffer, line_stream_vector &streams) {
                 return -1;
             }
             std::cout << "Decoding packet for FPGA " << fpga_id << ", ASIC " << asic_id << ", half " << half << std::endl;
-            int trg_in_ctr = bit_converter(buffer, decode_ptr + 4, false);
-            int trg_out_ctr = bit_converter(buffer, decode_ptr + 8, false);
-            int event_ctr = bit_converter(buffer, decode_ptr + 12, false);
 
-            uint64_t timestamp = bit_converter_64(buffer, decode_ptr + 16, false);
-            std::cout << "(false): " << trg_in_ctr << trg_out_ctr << event_ctr << timestamp << std::endl;
+            int trg_in_ctr = bit_converter(buffer, decode_ptr + 4, true);
+            int trg_out_ctr = bit_converter(buffer, decode_ptr + 8, true);
+            int event_ctr = bit_converter(buffer, decode_ptr + 12, true);
+            uint64_t timestamp = bit_converter_64(buffer, decode_ptr + 16, true);
 
-            trg_in_ctr = bit_converter(buffer, decode_ptr + 4, true);
-            trg_out_ctr = bit_converter(buffer, decode_ptr + 8, true);
-            event_ctr = bit_converter(buffer, decode_ptr + 12, true);
-            timestamp = bit_converter_64(buffer, decode_ptr + 16, true);
-
-            std::cout << "(true): " << trg_in_ctr << "\t" << trg_out_ctr << "\t" << event_ctr << "\t" << timestamp << std::endl;
+            std::cout << "in, out, evctr, tstamp: " << trg_in_ctr << "\t" << trg_out_ctr << "\t" << event_ctr << "\t" << timestamp << std::endl;
 
 
 
