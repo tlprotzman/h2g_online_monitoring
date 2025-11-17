@@ -137,6 +137,7 @@ void print_configs() {
     std::cout << "Configuration values:" << std::endl;
     std::cout << "NUM_LINES: " << config->NUM_LINES << std::endl;
     std::cout << "NUM_FPGA: " << config->NUM_FPGA << std::endl;
+    std::cout << "NUM_ASIC: " << config->NUM_ASIC << std::endl;
     std::cout << "NUM_CHANNELS: " << config->NUM_CHANNELS << std::endl;
     std::cout << "NUM_LINES: " << config->NUM_LINES << std::endl;
     std::cout << "MAX_SAMPLES: " << config->MAX_SAMPLES << std::endl;
