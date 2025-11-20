@@ -20,15 +20,28 @@
 //                         7,  6,  5,  4,  0,  1,  2,  3,
 //                         -1, -1, -1, -1, -1, -1, -1, -1};
 
-int lfhcal_channel_map[72] = {64, 63, 66, 65, 69, 70, 67, 68,
-                       54, 55, 56, 57, 61, 60, 59, 58,
-                       45, 46, 47, 48, 52, 51, 50, 49,
-                       37, 36, 39, 38, 42, 43, 40, 41,
-                       34, 33, 32, 31, 27, 28, 29, 30,
-                       24, 25, 22, 23, 19, 18, 21, 20,
+// 2024 PS T09 TB ordering
+// int lfhcal_channel_map[72] = {64, 63, 66, 65, 69, 70, 67, 68,
+//                        54, 55, 56, 57, 61, 60, 59, 58,
+//                        45, 46, 47, 48, 52, 51, 50, 49,
+//                        37, 36, 39, 38, 42, 43, 40, 41,
+//                        34, 33, 32, 31, 27, 28, 29, 30,
+//                        24, 25, 22, 23, 19, 18, 21, 20,
+//                        16, 14, 15, 12,  9, 11, 10, 13,
+//                         7,  6,  5,  4,  0,  1,  2,  3,
+//                         -1, -1, -1, -1, -1, -1, -1, -1};
+
+// 2025 PS T09 TB ordering
+int lfhcal_channel_map[72] = { 7,  6,  5,  4,  0,  1,  2,  3,
                        16, 14, 15, 12,  9, 11, 10, 13,
-                        7,  6,  5,  4,  0,  1,  2,  3,
+                       24, 25, 22, 23, 19, 18, 21, 20,
+                       34, 33, 32, 31, 27, 28, 29, 30,
+                       37, 36, 39, 38, 42, 43, 40, 41,
+                       45, 46, 47, 48, 52, 51, 50, 49,
+                       54, 55, 56, 57, 61, 60, 59, 58,
+                        64, 63, 66, 65, 69, 70, 67, 68,
                         -1, -1, -1, -1, -1, -1, -1, -1};
+
 
 
 // EEEMCal mapping - instead of "layers", we have a single plane, where each crystal is one connector
@@ -123,7 +136,9 @@ online_monitor::online_monitor(int run_number) {
 
     canvases = canvas_manager::get_instance();
     auto config = configuration::get_instance();
+    std::cout << "number of ASICs "<< config->NUM_ASIC << "\t number of KCUs: " << config->NUM_FPGA <<std::endl;
     int nCh  = 72*config->NUM_ASIC;
+    std::cout << "number of channels: " << nCh << std::endl;
     for (int i = 0; i < config->NUM_FPGA; i++) {
         adc_per_channel.push_back(new TH2D(Form("strip_adc_per_channel_%d", i), Form("Run %03d ADC per Channel FPGA %d", run_number, i), nCh, 0, nCh, 1024, 0, config->MAX_ADC));
         tot_per_channel.push_back(new TH2D(Form("strip_tot_per_channel_%d", i), Form("Run %03d TOT per Channel FPGA %d", run_number, i), nCh, 0, nCh, 1024, 0, config->MAX_TOT));
