@@ -110,7 +110,7 @@ int decode_packet_v012(uint8_t *buffer, line_stream_vector &streams) {
     // Increment pointer until we find 0xAA5A
     while (decode_ptr < config->PACKET_SIZE - 4) {
         if (buffer[decode_ptr] == 0xAA && buffer[decode_ptr + 1] == 0x5A) {
-            std::cout << "Found header at byte " << decode_ptr << std::endl;
+            //std::cout << "Found header at byte " << decode_ptr << std::endl;
             // The next 32*6=192 bytes are the data for 6 "lines"
             // Make sure we can actully read 192 bytes
             if (decode_ptr + 192 > config->PACKET_SIZE) {
@@ -125,14 +125,14 @@ int decode_packet_v012(uint8_t *buffer, line_stream_vector &streams) {
                 std::cerr << "Invalid half ID in packet!" << std::endl;
                 return -1;
             }
-            std::cout << "Decoding packet for FPGA " << fpga_id << ", ASIC " << asic_id << ", half " << half << std::endl;
+            //std::cout << "Decoding packet for FPGA " << fpga_id << ", ASIC " << asic_id << ", half " << half << std::endl;
 
             int trg_in_ctr = bit_converter(buffer, decode_ptr + 4, true);
             int trg_out_ctr = bit_converter(buffer, decode_ptr + 8, true);
             int event_ctr = bit_converter(buffer, decode_ptr + 12, true);
             uint64_t timestamp = bit_converter_64(buffer, decode_ptr + 16, true);
 
-            std::cout << "in, out, evctr, tstamp: " << trg_in_ctr << "\t" << trg_out_ctr << "\t" << event_ctr << "\t" << timestamp << "\t" << (timestamp & 0xFFFFFFFF) << std::endl;
+            //std::cout << "in, out, evctr, tstamp: " << trg_in_ctr << "\t" << trg_out_ctr << "\t" << event_ctr << "\t" << timestamp << "\t" << (timestamp & 0xFFFFFFFF) << std::endl;
 
 
 
