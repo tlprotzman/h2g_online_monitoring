@@ -49,8 +49,8 @@ void canvas_manager::clear_all() {
         auto primatives = c->GetListOfPrimitives();
         for (auto p : *primatives) {
             if (p->InheritsFrom(TH1::Class())) {
-            auto hist = (TH1*)p;
-            hist->Reset();
+              auto hist = (TH1*)p;
+              hist->Reset();
             }
         }
     }

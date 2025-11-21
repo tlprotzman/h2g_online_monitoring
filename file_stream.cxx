@@ -34,7 +34,7 @@ file_stream::file_stream(const char *fname) {
         missed_packets[i] = 0;
         total_packets[i] = 0;
         
-        canvas_id[i] = canvases.new_canvas(Form("FPGA_%i_Packets", i), Form("FPGA %i Packets", i), 1200, 800);
+        canvas_id[i] = canvases.new_canvas(Form("FPGA_Events_%i_Packets", i), Form("FPGA %i Packets", i), 1200, 800);
         s->Register("/QA Plots/DAQ Performance", canvases.get_canvas(canvas_id[i]));
         TLegend *legend = new TLegend(0.15, 0.75, 0.48, 0.9);
         legend->SetBorderSize(0);
@@ -149,17 +149,17 @@ int file_stream::read_packet(uint8_t *buffer) {
     file.read(reinterpret_cast<char*>(buffer), config->PACKET_SIZE);;
     current_head = file.tellg();
     if (file.rdstate() & std::ifstream::failbit || file.rdstate() & std::ifstream::badbit) {
-	if (std::ifstream::failbit) {
-            std::cerr << "Error reading line - failbit" << std::endl;
-	}
-	else if (std::ifstream::badbit) {
-            std::cerr << "Error reading line - badbit" << std::endl;
-	}
-	else if (std::ifstream::eofbit) {
-            std::cerr << "Error reading line - eofbit" << std::endl;
-	}
+      if (std::ifstream::failbit) {
+                std::cerr << "Error reading line - failbit" << std::endl;
+      }
+      else if (std::ifstream::badbit) {
+                std::cerr << "Error reading line - badbit" << std::endl;
+      }
+      else if (std::ifstream::eofbit) {
+                std::cerr << "Error reading line - eofbit" << std::endl;
+      }
 
-	perror("bad read");
+    perror("bad read");
         return 0;
     }
     // Check if this is a heartbeat packet
