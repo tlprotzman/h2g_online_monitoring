@@ -124,7 +124,7 @@ int lfhcal_get_channel_z(int channel) {
 } 
 
 
-online_monitor::online_monitor(int run_number) {
+online_monitor::online_monitor(int run_number, int debug) {
     gSystem->mkdir("monitoring_plots", kTRUE);
     gSystem->mkdir(Form("monitoring_plots/run_%03d", run_number), kTRUE);
     auto time = std::chrono::system_clock::now();
@@ -136,9 +136,9 @@ online_monitor::online_monitor(int run_number) {
 
     canvases = canvas_manager::get_instance();
     auto config = configuration::get_instance();
-    std::cout << "number of ASICs "<< config->NUM_ASIC << "\t number of KCUs: " << config->NUM_FPGA <<std::endl;
+    if (debug > 0) std::cout << "number of ASICs "<< config->NUM_ASIC << "\t number of KCUs: " << config->NUM_FPGA <<std::endl;
     int nCh  = 72*config->NUM_ASIC;
-    std::cout << "number of channels: " << nCh << std::endl;
+    if (debug > 0) std::cout << "number of channels: " << nCh << std::endl;
     for (int i = 0; i < config->NUM_FPGA; i++) {
         adc_per_channel.push_back(new TH2D(Form("strip_adc_per_channel_%d", i), Form("Run %03d ADC per Channel FPGA %d", run_number, i), nCh, 0, nCh, 1024, 0, config->MAX_ADC));
         tot_per_channel.push_back(new TH2D(Form("strip_tot_per_channel_%d", i), Form("Run %03d TOT per Channel FPGA %d", run_number, i), nCh, 0, nCh, 1024, 0, config->MAX_TOT));

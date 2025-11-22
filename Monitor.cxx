@@ -45,11 +45,11 @@ void signal_handler(int signal) {
     stop = true;
 }
 
-void run_monitoring(int run) {
+void run_monitoring(int run, int debug) {
     std::cout << "huh??" << std::endl;
     auto s = server::get_instance()->get_server();
     auto start_time = std::chrono::high_resolution_clock::now();
-    auto m = new online_monitor(run);
+    auto m = new online_monitor(run, debug);
     auto line_numbers = new TH1I("line_numbers", "Line Numbers", 5, 0, 5);
 
     // Some histograms to check the data rates from each board/asic
@@ -116,37 +116,41 @@ void run_monitoring(int run) {
             // std::cout << "Heartbeat: " << heartbeat_seconds << "." << heartbeat_milliseconds << std::endl;
             continue;
         }
+        //*****************************************************************************************
+        // 2024 data format - 1G
+        //*****************************************************************************************
         std::vector<line> lines(36);    // 36 lines per packet
         if (configuration::get_instance()->FILE_VERSION_MAJOR == 0 && configuration::get_instance()->FILE_VERSION_MINOR < 13) {
-            // Old format
             decode_packet(lines, buffer);
             process_lines(lines, m->line_streams, data_rates);
             for (auto line : lines) {
                 line_numbers->Fill(line.line_number);
             }
             m->update_events();
+        //*****************************************************************************************
+        // 2025 data format - 2G
+        //*****************************************************************************************
         } else {
-            // New format decoding can go here
-            decode_packet_v012(buffer, m->line_streams);
+            decode_packet_v012(buffer, m->line_streams, debug);
             m->update_events();
         }
     }
     delete m;
 }
 
-int Monitor(int run, std::string config_file) {
+int Monitor(int run, std::string config_file, int debug) {
     // register signal handler
     signal(SIGINT, signal_handler);
 
     gStyle->SetOptStat(0);
     load_configs(config_file, run);  // Always load the config before starting 
     print_configs();
-    run_monitoring(run);
+    run_monitoring(run, debug);
     return 0;
 }
 
 int main() {
     TApplication app("app", 0, nullptr);
-    Monitor(42, "");  // answer to the universe
+    Monitor(42, "", 0);  // answer to the universe
     return 0;
 }

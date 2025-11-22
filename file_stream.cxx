@@ -25,8 +25,6 @@ file_stream::file_stream(const char *fname) {
     missed_packet_graphs_percent = new TGraph*[config->NUM_FPGA];
     mg = new TMultiGraph*[config->NUM_FPGA];
 
-
-
     auto canvases = canvas_manager::get_instance();
     auto s = server::get_instance()->get_server();
     for (int i = 0; i < config->NUM_FPGA; i++) {

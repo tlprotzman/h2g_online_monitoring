@@ -28,7 +28,7 @@ private:
 public:
     channel_stream_vector channels;
     line_stream_vector line_streams;
-    online_monitor(int run_number);
+    online_monitor(int run_number, int debug);
     ~online_monitor();
 
     // TRint *app;

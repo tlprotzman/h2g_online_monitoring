@@ -2,10 +2,10 @@
 #include <TSystem.h>
 #include <THttpServer.h>
 
-void RunMonitoring(int run = 1) {
+void RunMonitoring(int run = 1, int debug = 0) {
 	  gSystem->Load("libRHTTP.so");
     gSystem->Load("libMonitoring.so");
     // Monitor(run, "generic_20sample.cfg");
     // Monitor(run, "eeemcal_20sample.cfg");
-    Monitor(run, "lfhcal_10sample.cfg");
+    Monitor(run, "lfhcal_10sample.cfg", debug);
 }
