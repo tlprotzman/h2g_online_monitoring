@@ -4,7 +4,7 @@
 #include <fstream>
 #include <string>
 
-void load_configs(std::string config_file, int run) {
+void load_configs(std::string config_file, int run, int debug) {
     std::cout << "Parsing config file " << config_file << std::endl;
     auto config = configuration::get_instance();
     std::ifstream file(config_file);
@@ -23,6 +23,8 @@ void load_configs(std::string config_file, int run) {
                     config->NUM_LINES = std::stoi(value);
                 } else if (key == "NUM_FPGA") {
                     config->NUM_FPGA = std::stoi(value);
+                } else if (key == "NUM_ASIC") {
+                    config->NUM_ASIC = std::stoi(value);
                 } else if (key == "NUM_CHANNELS") {
                     config->NUM_CHANNELS = std::stoi(value);
                 } else if (key == "NUM_LINES") {
@@ -62,13 +64,13 @@ void load_configs(std::string config_file, int run) {
     std::ifstream runfile(run_file);
     bool is_jumbo = false;
     if (runfile.is_open()) {
-        // std::cout << "opened run file: " << run_file << std::endl;
+        if (debug == 2) std::cout << "opened run file: " << run_file << std::endl;
         std::string line;
         // Skip two lines
         std::getline(runfile, line);
         std::getline(runfile, line);
         while (std::getline(runfile, line)) {
-            // std::cout << "processing line: " << line << std::endl;
+            if (debug == 2)  std::cout << "processing line: " << line << std::endl;
             if (line == "##################################################") break;
             // Look for the file version
             std::string key, value;
@@ -85,6 +87,15 @@ void load_configs(std::string config_file, int run) {
                         config->FILE_VERSION_MINOR = std::stoi(value.substr(dot_pos + 1));
                     }
                 }
+                if (key == "# Number of KCUs: ") {
+                    config->NUM_FPGA = std::stoi(value);
+                    std::cout << "Setting NUM_FPGA to " << config->NUM_FPGA << std::endl;
+                }
+                if (key == "# Number of ASICs: ") {
+                    config->NUM_ASIC = std::stoi(value);
+                    std::cout << "Setting NUM_ASIC to " << config->NUM_ASIC << std::endl;
+                }
+                
                 if (key == "# Generator Setting machine_gun") {
                     config->MAX_SAMPLES = std::stoi(value);
                     std::cout << "Setting MAX_SAMPLES to " << config->MAX_SAMPLES << std::endl;

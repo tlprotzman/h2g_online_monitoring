@@ -131,7 +131,7 @@ void run_monitoring(int run, int debug) {
         // 2025 data format - 2G
         //*****************************************************************************************
         } else {
-            decode_packet_v012(buffer, m->line_streams, debug);
+            decode_packet_v013(buffer, m->line_streams, debug);
             m->update_events();
         }
     }
@@ -143,7 +143,7 @@ int Monitor(int run, std::string config_file, int debug) {
     signal(SIGINT, signal_handler);
 
     gStyle->SetOptStat(0);
-    load_configs(config_file, run);  // Always load the config before starting 
+    load_configs(config_file, run, debug);  // Always load the config before starting 
     print_configs();
     run_monitoring(run, debug);
     return 0;

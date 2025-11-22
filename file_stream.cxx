@@ -12,7 +12,9 @@
 #include <TDatime.h>
 #include <TLegend.h>
 
-
+//********************************************************************************************
+// Analysing file stream 
+//********************************************************************************************
 file_stream::file_stream(const char *fname) {
     auto config = configuration::get_instance();    
     current_packet = new uint16_t[config->NUM_FPGA];
@@ -86,17 +88,23 @@ file_stream::file_stream(const char *fname) {
         std::cerr << "Error opening file" << std::endl;
         throw std::runtime_error("Error opening file");
     }
+    //********************************************************************************************
     // read file until newline is found
+    //********************************************************************************************
     char c;
-    // skip the first 21 lines... sigh.  this should be better
-    for (int i = 0; i < 25; i++) { //modified to ~~23~~ 25 for now
+    //********************************************************************************************
+    // First part of file contains additional information written by the DAQ regarding settings
+    // This part needs to be skipped, different version contain different number of lines
+    //********************************************************************************************
+    int skipLines = 21;
+    if (configuration::get_instance()->FILE_VERSION_MINOR == 13) 
+      skipLines = 23;
+    if (configuration::get_instance()->FILE_VERSION_MINOR > 13) 
+      skipLines = 25;
+    std::cout << "Skipping first " << skipLines << std::endl;
+    for (int i = 0; i < skipLines; i++) { 
         while (file.get(c) && c != '\n');
     }
-
-    // while (file.get(c) && c == '#') {
-    //     while (file.get(c) && c != '\n');
-    // }
-    // file.seekg(-1, std::ios::cur);
     current_head = file.tellg();
     std::cout << "Starting at byte " << current_head << std::endl;
 }

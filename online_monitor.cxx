@@ -10,16 +10,6 @@
 #include <TLatex.h>
 #include <TParameter.h>
 
-// int lfhcal_channel_map[72] = {64, 63, 66, 65, 69, 70, 67, 68,
-//                        55, 56, 57, 58, 62, 61, 60, 59,
-//                        45, 46, 47, 48, 52, 51, 50, 49,
-//                        37, 36, 39, 38, 42, 43, 40, 41,
-//                        34, 33, 32, 31, 27, 28, 29, 30,
-//                        25, 26, 23, 24, 20, 19, 22, 21,
-//                        16, 14, 15, 12,  9, 11, 10, 13,
-//                         7,  6,  5,  4,  0,  1,  2,  3,
-//                         -1, -1, -1, -1, -1, -1, -1, -1};
-
 // 2024 PS T09 TB ordering
 // int lfhcal_channel_map[72] = {64, 63, 66, 65, 69, 70, 67, 68,
 //                        54, 55, 56, 57, 61, 60, 59, 58,
@@ -75,18 +65,6 @@ int eeemcal_connector_map[25] = { 2,  0,  1,  0,  1,
                                   1,  2,  0,  3,  0,
                                   2,  0,  1,  1,  2,
                                   3,  1,  3,  1,  2};
-
-// int eeemcal_16i_channel_a_map[16] = { 0,  1,  2,  3,  4,  5,  6,  7,
-//                                       9, 10, 11, 12, 13, 14, 15, 16};
-
-// int eeemcal_16i_channel_b_map[16] = {19, 20, 21, 22, 23, 24, 25, 26,
-//                                      27, 28, 29, 30, 31, 32, 33, 34};
-
-// int eeemcal_16i_channel_c_map[16] = {55, 56, 57, 58, 59, 60, 61, 62,
-//                                      63, 64, 65, 66, 67, 68, 69, 70};
-
-// int eeemcal_16i_channel_d_map[16] = {36, 37, 38, 39, 40, 41, 42, 43,
-//                                      45, 46, 47, 48, 49, 50, 51, 52};
 
 int eeemcal_16i_channel_a_map[16] = { 2,  6, 11, 15,  0,  4,  9, 13,
                                       1,  5, 10, 14,  3,  7, 12, 16};
@@ -270,6 +248,9 @@ online_monitor::online_monitor(int run_number, int debug) {
         }
     }
     
+    //************************************************************************************
+    // LFHCal Configuration
+    //************************************************************************************
     if (config->DETECTOR_ID == 1) { // LFHCAL Configuration
         uint32_t ordered_adc_canvas[config->NUM_FPGA * config->NUM_ASIC];
         uint32_t ordered_waveform_canvas[config->NUM_FPGA * config->NUM_ASIC];
@@ -308,9 +289,7 @@ online_monitor::online_monitor(int run_number, int debug) {
                     channels[fpga][asic][lfhcal_channel_map[channel]]->draw_adc();
                     text->SetTextAlign(33);
                     text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
-                    text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
-                    text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
-                    text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", lfhcal_channel_map[channel]));
+                    text->DrawLatexNDC(0.95, 0.82, Form("F %d, A %d, Ch %d", fpga, asic, lfhcal_channel_map[channel]));
                     gPad->SetLogy();
                     
                     c = canvases.get_canvas(ordered_waveform_canvas[fpga * config->NUM_ASIC + asic]);
@@ -318,9 +297,7 @@ online_monitor::online_monitor(int run_number, int debug) {
                     channels[fpga][asic][lfhcal_channel_map[channel]]->draw_waveform();
                     text->SetTextAlign(33);
                     text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
-                    text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
-                    text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
-                    text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", lfhcal_channel_map[channel]));
+                    text->DrawLatexNDC(0.95, 0.82, Form("F %d, A %d, Ch %d", fpga, asic, lfhcal_channel_map[channel]));
                     gPad->SetLogz();
 
                     c = canvases.get_canvas(adc_max_canvas[fpga * config->NUM_ASIC + asic]);
@@ -328,10 +305,8 @@ online_monitor::online_monitor(int run_number, int debug) {
                     channels[fpga][asic][lfhcal_channel_map[channel]]->draw_max();
                     text->SetTextAlign(33);
                     text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
-                    text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
-                    text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
-                    text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", lfhcal_channel_map[channel]));
-                    text->DrawLatexNDC(0.95, 0.43, Form("max(samples) - samples[0]"));
+                    text->DrawLatexNDC(0.95, 0.82, Form("F %d, A %d, Ch %d", fpga, asic, lfhcal_channel_map[channel]));
+                    text->DrawLatexNDC(0.95, 0.69, Form("max(samples) - samples[0]"));
                     gPad->SetLogy();
 
                     c = canvases.get_canvas(ordered_tot_canvas[fpga * config->NUM_ASIC + asic]);
@@ -339,9 +314,7 @@ online_monitor::online_monitor(int run_number, int debug) {
                     channels[fpga][asic][lfhcal_channel_map[channel]]->draw_tot();
                     text->SetTextAlign(33);
                     text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
-                    text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
-                    text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
-                    text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", lfhcal_channel_map[channel]));
+                    text->DrawLatexNDC(0.95, 0.82, Form("F %d, A %d, Ch %d", fpga, asic, lfhcal_channel_map[channel]));
                     gPad->SetLogy();
 
                     c = canvases.get_canvas(ordered_toa_canvas[fpga * config->NUM_ASIC + asic]);
@@ -349,15 +322,16 @@ online_monitor::online_monitor(int run_number, int debug) {
                     channels[fpga][asic][lfhcal_channel_map[channel]]->draw_toa();
                     text->SetTextAlign(33);
                     text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
-                    text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", fpga));
-                    text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", asic));
+                    text->DrawLatexNDC(0.95, 0.82, Form("F %d, A %d, Ch %d", fpga, asic, lfhcal_channel_map[channel]));
                     gPad->SetLogy();
                 }
             }
         }
     }
-
-    else if (config->DETECTOR_ID == 2) { // EEEMCal Configuration
+    //************************************************************************************
+    // EEEMCal Configuration
+    //************************************************************************************
+    else if (config->DETECTOR_ID == 2) { 
         // 16 individual readout
         // Let's try to put everything on one canvas....
         uint32_t waveform_mega__canvas = canvases.new_canvas("Waveforms_eeemcal_individual_readout", "Individual Readout", 1200, 800);
@@ -374,11 +348,6 @@ online_monitor::online_monitor(int run_number, int debug) {
                 int channel_asic = eeemcal_asic_map[i];
                 int channel_channel = eeemcal_16i_channel_map[eeemcal_connector_map[i]][sipm];
                 channels[channel_fpga][channel_asic][channel_channel]->draw_waveform();
-                // text->SetTextAlign(33);
-                // text->DrawLatexNDC(0.95, 0.95, Form("Run %d", run_number));
-                // text->DrawLatexNDC(0.95, 0.82, Form("FPGA %d", channel_fpga));
-                // text->DrawLatexNDC(0.95, 0.69, Form("ASIC %d", channel_asic));
-                // text->DrawLatexNDC(0.95, 0.56, Form("Channel %d", channel_channel));
                 gPad->SetLogz();
             }
         }

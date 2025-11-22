@@ -44,5 +44,5 @@ public:
 };
 
 
-void load_configs(std::string config_file, int run);
+void load_configs(std::string config_file, int run, int debug);
 void print_configs();
