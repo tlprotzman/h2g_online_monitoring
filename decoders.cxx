@@ -122,7 +122,7 @@ int decode_packet_v013(uint8_t *buffer, line_stream_vector &streams, int debug) 
             int fpga_id = (buffer[decode_ptr + 2] >> 4);     // upper 4 bits
             int half = decode_half(buffer[decode_ptr + 3]);
             if (half == -1) {
-                std::cerr << "Invalid half ID in packet!, :" << std::hex<< int(buffer[decode_ptr + 3]) << std::endl;
+                std::cerr << "Invalid half ID in packet! " << std::hex<< int(buffer[decode_ptr + 3]) << std::endl;
                 for (int i = 0; i < 224/8; i++){
                   for (int j = 0; j < 8; j++){
                     std::cerr << std::hex <<int(buffer[decode_ptr + i*8+j]) << "\t" ;

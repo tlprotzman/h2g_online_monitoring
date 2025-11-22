@@ -45,8 +45,8 @@ void signal_handler(int signal) {
     stop = true;
 }
 
-void run_monitoring(int run, int debug) {
-    std::cout << "huh??" << std::endl;
+void run_monitoring(int run, int debug, bool isPostAna=false) {
+    std::cout << "Real decoding started" << std::endl;
     auto s = server::get_instance()->get_server();
     auto start_time = std::chrono::high_resolution_clock::now();
     auto m = new online_monitor(run, debug);
@@ -101,7 +101,7 @@ void run_monitoring(int run, int debug) {
         }
         int good_data = fs.read_packet(buffer);
         if (!good_data) {
-            if (false && all_events_built) {
+            if (isPostAna && all_events_built) {
                 std::cout << "All events built, exiting..." << std::endl;
                 break;
             }
@@ -138,14 +138,14 @@ void run_monitoring(int run, int debug) {
     delete m;
 }
 
-int Monitor(int run, std::string config_file, int debug) {
+int Monitor(int run, std::string config_file, int debug, bool isPostAna = false) {
     // register signal handler
     signal(SIGINT, signal_handler);
 
     gStyle->SetOptStat(0);
     load_configs(config_file, run, debug);  // Always load the config before starting 
     print_configs();
-    run_monitoring(run, debug);
+    run_monitoring(run, debug, isPostAna);
     return 0;
 }
 

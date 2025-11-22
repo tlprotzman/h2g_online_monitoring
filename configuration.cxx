@@ -87,18 +87,46 @@ void load_configs(std::string config_file, int run, int debug) {
                         config->FILE_VERSION_MINOR = std::stoi(value.substr(dot_pos + 1));
                     }
                 }
-                if (key == "# Number of KCUs: ") {
+                if (key == "# Number of KCUs") {
                     config->NUM_FPGA = std::stoi(value);
-                    std::cout << "Setting NUM_FPGA to " << config->NUM_FPGA << std::endl;
+                    std::cout << "Resetting NUM_FPGA to " << config->NUM_FPGA << std::endl;
                 }
-                if (key == "# Number of ASICs: ") {
+                if (key == "# Number of ASICs") {
                     config->NUM_ASIC = std::stoi(value);
-                    std::cout << "Setting NUM_ASIC to " << config->NUM_ASIC << std::endl;
+                    std::cout << "Resetting NUM_ASIC to " << config->NUM_ASIC << std::endl;
+                }                      
+                if (key == "# Generator Setting data_coll_enable") {
+                    int dataEnable = std::stoi(value);
+                    int a = 1;
+                    int minEnable = int(a << (config->NUM_ASIC-1));
+                    int maxEnable = int(a << (config->NUM_ASIC));
+                    std::cout << "Data enable check-----> " << dataEnable << "\t" << minEnable<< "\t" << maxEnable<< "\t"<< config->NUM_ASIC << std::endl;
+                    
+                    if (dataEnable < minEnable ){
+                      std::cerr << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+                      std::cerr << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+                      std::cerr << "==============================================================" << std::endl;
+                      std::cerr << "ATTENTION:: You are enabling less ASICS than you think !!!!" << std::endl;
+                      std::cerr << "-----> " << dataEnable << "\t" << minEnable<< "\t"<< config->NUM_ASIC << std::endl;
+                      std::cerr << "==============================================================" << std::endl;
+                      std::cerr << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+                      std::cerr << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+                    }
+                    if (dataEnable > maxEnable ){
+                      std::cerr << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+                      std::cerr << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+                      std::cerr << "==============================================================" << std::endl;
+                      std::cerr << "ATTENTION:: You are enabling more ASICS than you should !!!!" << std::endl;
+                      std::cerr << "-----> " << dataEnable << "\t" << maxEnable << "\t"<< config->NUM_ASIC << std::endl;
+                      std::cerr << "==============================================================" << std::endl;
+                      std::cerr << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+                      std::cerr << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+                    }
                 }
                 
                 if (key == "# Generator Setting machine_gun") {
                     config->MAX_SAMPLES = std::stoi(value);
-                    std::cout << "Setting MAX_SAMPLES to " << config->MAX_SAMPLES << std::endl;
+                    std::cout << "Resetting MAX_SAMPLES to " << config->MAX_SAMPLES << std::endl;
                 }
                 if (key == "# Generator Setting jumbo_enable") {
                     // 0 if off, 1 if on

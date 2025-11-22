@@ -38,7 +38,6 @@ public:
     int DETECTOR_ID = 0;
 
     int PACKET_SIZE = 1452;
-
     int EVENT_ALIGNMENT_TOLERANCE = 4;
 
 };
