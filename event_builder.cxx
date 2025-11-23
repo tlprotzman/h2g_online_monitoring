@@ -206,7 +206,7 @@ void event_builder::channel_hit(single_channel_event *single) {
 }
 
 void event_builder::update_stats() {
-    // std::cout << "FPGA " << fpga_id << " completed " << completed_events << "/" << attempted_events << " events." << std::endl;
+    std::cout << "FPGA " << fpga_id << " completed " << completed_events << "/" << attempted_events << " events." << std::endl;
     auto time = TDatime();
     events_attempted->SetPoint(events_attempted->GetN(), time.Convert(), attempted_events);
     events_complete->SetPoint(events_complete->GetN(), time.Convert(), completed_events);
@@ -228,7 +228,7 @@ void event_thunderdome::align_events() {
     uint32_t max_event_buffer = 0;
     // std::cout << std::endl;
     for (int i = 0; i < configuration::get_instance()->NUM_FPGA; i++) {
-        // std::cout << "FPGA " << i << " has " << builders[i]->completed_event_buffer.size() << " events in the buffer." << std::endl;
+        std::cout << "FPGA " << i << " has " << builders[i]->completed_event_buffer.size() << " events in the buffer." << std::endl;
         if (builders[i]->completed_event_buffer.size() == 0) {
             return;
         }
@@ -261,7 +261,7 @@ void event_thunderdome::align_events() {
     while (running) {
         // if any buffers are empty, stop
         for (int i = 0; i < configuration::get_instance()->NUM_FPGA; i++) {
-            // std::cout << "builder " << i << " has " << builders[i]->completed_event_buffer.size() << " events in the buffer." << std::endl;
+            std::cout << "builder " << i << " has " << builders[i]->completed_event_buffer.size() << " events in the buffer." << std::endl;
             if (builders[i]->completed_event_buffer.size() == 0) {
                 running = false;
                 break;
@@ -311,7 +311,7 @@ void event_thunderdome::align_events() {
             if (running == false) {
                 break;
             }
-            // std::cout << "pushing back event with " << events.size() << " FPGAs" << std::endl;
+            std::cout << "pushing back event with " << events.size() << " FPGAs" << std::endl;
             built_events.push_back(events);
 
 
@@ -350,7 +350,7 @@ void event_thunderdome::align_events() {
             if (max_deviation > 0) {
                 for (int i = 0; i < configuration::get_instance()->NUM_FPGA; i++) {
                     if (i != max_deviation_index) {
-                        // std::cout << "running path a" << std::endl;
+                        std::cout << "running path a" << std::endl;
                         builders[i]->completed_event_buffer.pop_front();
                         if (builders[i]->completed_event_buffer.size() == 0) {
                             running = false;
@@ -360,7 +360,7 @@ void event_thunderdome::align_events() {
                 }
             } else {
                 // We need to shift the events
-                // std::cout << "running path b" << std::endl;
+                std::cout << "running path b" << std::endl;
                 builders[max_deviation_index]->completed_event_buffer.pop_front();
                 if (builders[max_deviation_index]->completed_event_buffer.size() == 0) {
                     running = false;

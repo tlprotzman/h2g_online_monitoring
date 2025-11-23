@@ -55,7 +55,7 @@ public:
     kcu_event(uint32_t timestamp, uint32_t fpga_id);
     ~kcu_event();
 
-    bool is_complete() {return channels_found == 2 * configuration::get_instance()->NUM_CHANNELS;}
+    bool is_complete() {return channels_found == configuration::get_instance()->NUM_ASIC * configuration::get_instance()->NUM_CHANNELS;}
     uint32_t get_fpga_id() {return fpga_id;}
     single_channel_event* get_channel(int channel) {return channels[channel];}
 
