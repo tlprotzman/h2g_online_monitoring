@@ -110,7 +110,7 @@ file_stream::~file_stream() {
         delete recieved_packet_graphs[i];
         delete missed_packet_graphs[i];
         delete missed_packet_graphs_percent[i];
-        delete mg[i];
+        // delete mg[i];
     }
     delete[] current_packet;
     delete[] missed_packets;

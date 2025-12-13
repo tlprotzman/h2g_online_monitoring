@@ -20,6 +20,7 @@ int lfhcal_channel_map[72] = {64, 63, 66, 65, 69, 70, 67, 68,
                         7,  6,  5,  4,  0,  1,  2,  3,
                         -1, -1, -1, -1, -1, -1, -1, -1};
 
+/* DESY FEB 2025
 // EEEMCal mapping - instead of "layers", we have a single plane, where each crystal is one connector
 // FPGA IP | ID
 // 208     | 0
@@ -51,6 +52,42 @@ int eeemcal_connector_map[25] = { 2,  0,  1,  0,  1,
                                   1,  2,  0,  3,  0,
                                   2,  0,  1,  1,  2,
                                   3,  1,  3,  1,  2};
+*/
+
+// DESY DEC 2025
+// EEEMCal mapping - instead of "layers", we have a single plane, where each crystal is one connector
+// FPGA IP | ID
+// 208     | 0
+// 209     | 1
+// 210     | 2
+// 211     | 3
+int eeemcal_fpga_map[25] = {1, 2, 1, 2, 2,
+                            3, 3, 3, 0, 1,
+                            1, 2, 2, 3, 0,
+                            3, 0, 2, 0, 0,
+                            1, 2, 1, 2, 1};
+
+// ASIC | ID
+// 0    | 0
+// 1    | 1
+int eeemcal_asic_map[25] = { 1, 0, 0, 1, 1,
+                             1, 1, 0, 1, 0,
+                             0, 1, 0, 0, 0,
+                             0, 1, 0, 0, 1,
+                             0, 1, 1, 0, 1};
+
+// Connector | ID
+// A        | 0
+// B        | 1
+// C        | 2
+// D        | 3
+int eeemcal_connector_map[25] = { 0,  0,  3,  1,  3,
+                                  0,  3,  3,  2,  0,
+                                  2,  2,  3,  2,  0,
+                                  0,  3,  2,  2,  0,
+                                  1,  0,  3,  1,  2};
+
+                                  
 
 // int eeemcal_16i_channel_a_map[16] = { 0,  1,  2,  3,  4,  5,  6,  7,
 //                                       9, 10, 11, 12, 13, 14, 15, 16};
