@@ -30,6 +30,9 @@ private:
     TH1D *tot_spectra;
     TH1D *toa_spectra;
 
+    TH1D *adc_pedestal;
+    TH1D *adc_max_minus_ped;
+
     TH2 *adc_per_channel;
     TH2 *tot_per_channel;
     TH2 *toa_per_channel;
@@ -44,9 +47,14 @@ public:
     ~channel_stream();
     void construct_event(uint32_t timestamp, uint32_t adc);
     void fill_readouts(uint32_t adc, uint32_t tot, uint32_t toa);
+    void fill_ped_and_max(uint32_t pedestal, uint32_t max);
     void draw_adc() {adc_spectra->Draw();}
     void draw_tot() {tot_spectra->Draw();}
     void draw_toa() {toa_spectra->Draw();}
+    void draw_pedestal() {adc_pedestal->Draw();}
+    int get_ped_mean() {adc_pedestal->GetMean();}
+    int get_ped_rms() {adc_pedestal->GetRMS();}
+    void draw_max_minus_pedestal() {adc_max_minus_ped->Draw();}
     void draw_waveform() {adc_waveform->Draw("col");}
     void draw_max() {adc_max->Draw();}
     int test = 42;

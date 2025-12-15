@@ -33,6 +33,7 @@ public:
     bool is_complete() {return this->complete;}
     void fill_waveform(TH2 *waveform, TH1 *max);
     int get_max_sample();
+    int get_pedestal();
     void write_to_tree();
 
     friend class kcu_event;

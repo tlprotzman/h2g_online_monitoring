@@ -87,6 +87,10 @@ int single_channel_event::get_max_sample() {
     return value;
 }
 
+int single_channel_event::get_pedestal() {
+    return this->samples[0];
+}   
+
 void single_channel_event::write_to_tree() {
     auto tree = single_channel_tree::get_instance();
     tree->current_fpga_id = fpga_id;
