@@ -154,8 +154,13 @@ int decode_packet_v013(uint8_t *buffer, line_stream_vector &streams, int debug) 
                 for (int word = 0; word < 8; word++) {
                     l.package[word] = bit_converter(buffer, decode_ptr + word * 4, true);
                 }
+                if (l.asic_id > config->NUM_ASIC-1 ){
+                  std::cout << "ATTENTION something is really wrong here! current asic ID : " << l.asic_id << " > max asic ID: " <<  config->NUM_ASIC << std::endl;
+                  decode_ptr += 32;       // jump to next line
+                  continue;
+                }
                 streams[l.fpga_id][l.asic_id][l.half_id]->add_line(l);
-                decode_ptr += 32;
+                decode_ptr += 32;         // jump to next line
             }
         } else {
             decode_ptr++;

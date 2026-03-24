@@ -37,6 +37,14 @@ public:
     // 3: FOCAL
     int DETECTOR_ID = 0;
 
+    // SETUP ID
+    // 0: default
+    // 1: 2024 LFHCal TB
+    // 2: 2025 LFHCal TB
+    // 3: 2026 LFHCal TB Summing Board V1
+    // 4: 2026 LFHCal TB Summing Board V2
+    int SETUP_ID = 0;
+    
     int PACKET_SIZE = 1452;
     int EVENT_ALIGNMENT_TOLERANCE = 4;
 

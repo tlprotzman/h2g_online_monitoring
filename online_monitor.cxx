@@ -10,29 +10,51 @@
 #include <TLatex.h>
 #include <TParameter.h>
 
+int lfhcal_channel_map[72];
 // 2024 PS T09 TB ordering
-// int lfhcal_channel_map[72] = {64, 63, 66, 65, 69, 70, 67, 68,
-//                        54, 55, 56, 57, 61, 60, 59, 58,
-//                        45, 46, 47, 48, 52, 51, 50, 49,
-//                        37, 36, 39, 38, 42, 43, 40, 41,
-//                        34, 33, 32, 31, 27, 28, 29, 30,
-//                        24, 25, 22, 23, 19, 18, 21, 20,
-//                        16, 14, 15, 12,  9, 11, 10, 13,
-//                         7,  6,  5,  4,  0,  1,  2,  3,
-//                         -1, -1, -1, -1, -1, -1, -1, -1};
+int lfhcal_channel2024_map[72] = {64, 63, 66, 65, 69, 70, 67, 68,
+                                  54, 55, 56, 57, 61, 60, 59, 58,
+                                  45, 46, 47, 48, 52, 51, 50, 49,
+                                  37, 36, 39, 38, 42, 43, 40, 41,
+                                  34, 33, 32, 31, 27, 28, 29, 30,
+                                  24, 25, 22, 23, 19, 18, 21, 20,
+                                  16, 14, 15, 12,  9, 11, 10, 13,
+                                    7,  6,  5,  4,  0,  1,  2,  3,
+                                    -1, -1, -1, -1, -1, -1, -1, -1};
 
 // 2025 PS T09 TB ordering
-int lfhcal_channel_map[72] = { 7,  6,  5,  4,  0,  1,  2,  3,
-                       16, 14, 15, 12,  9, 11, 10, 13,
-                       24, 25, 22, 23, 19, 18, 21, 20,
-                       34, 33, 32, 31, 27, 28, 29, 30,
-                       37, 36, 39, 38, 42, 43, 40, 41,
-                       45, 46, 47, 48, 52, 51, 50, 49,
-                       54, 55, 56, 57, 61, 60, 59, 58,
-                        64, 63, 66, 65, 69, 70, 67, 68,
-                        -1, -1, -1, -1, -1, -1, -1, -1};
+int lfhcal_channel2025_map[72] = { 7,  6,  5,  4,  0,  1,  2,  3,
+                                  16, 14, 15, 12,  9, 11, 10, 13,
+                                  24, 25, 22, 23, 19, 18, 21, 20,
+                                  34, 33, 32, 31, 27, 28, 29, 30,
+                                  37, 36, 39, 38, 42, 43, 40, 41,
+                                  45, 46, 47, 48, 52, 51, 50, 49,
+                                  54, 55, 56, 57, 61, 60, 59, 58,
+                                  64, 63, 66, 65, 69, 70, 67, 68,
+                                  -1, -1, -1, -1, -1, -1, -1, -1};
 
+// 2026 TB ordering summing board V1
+int lfhcal_channel2026SumV1_map[72] = { 56, 11, 16, 18, 32, 5, 13, 22,    // layer 0 
+                                        63, 27, 23, 14, 46, 29, 25, 19,    // layer 1 
+                                        61, 60, 59, 20, 1, 10, 58, 12,     // layer 2
+                                        15, 30, 34, 65, 33, 57, 64, 69,    // layer 3
+                                        55, 28, 39, 70, 31, 9, 47, 42,     // layer 4
+                                        50, 45, 4, 66, 51, 36, 49, 0,      // layer 5 
+                                        3, 7, 41, 54, 24, 37, 43, 68,      // layer 6 
+                                        48, 6, 21, 40, 67, 52, 2, 38,      // layer 7   
+                                          -1, -1, -1, -1, -1, -1, -1, -1};
 
+// 2026 TB ordering summing board V2
+int lfhcal_channel2026SumV2_map[72] = { 56, 11, 16, 18, 32, 5, 13, 22,    // layer 0 
+                                        63, 27, 23, 14, 46, 29, 25, 19,    // layer 1 
+                                        61, 60, 59, 20, 1, 10, 58, 12,     // layer 2
+                                        48, 6, 21, 40, 67, 52, 2, 38,      // layer 3   
+                                        15, 30, 34, 65, 33, 57, 64, 69,    // layer 4
+                                        55, 28, 39, 70, 31, 9, 47, 42,     // layer 5
+                                        50, 45, 4, 66, 51, 36, 49, 0,      // layer 6 
+                                        3, 7, 41, 54, 24, 37, 43, 68,      // layer 7 
+                                          -1, -1, -1, -1, -1, -1, -1, -1};
+                        
 
 // EEEMCal mapping - instead of "layers", we have a single plane, where each crystal is one connector
 // FPGA IP | ID
@@ -257,6 +279,19 @@ online_monitor::online_monitor(int run_number, int debug) {
         uint32_t ordered_tot_canvas[config->NUM_FPGA * config->NUM_ASIC];
         uint32_t ordered_toa_canvas[config->NUM_FPGA * config->NUM_ASIC];
         uint32_t adc_max_canvas[config->NUM_FPGA * config->NUM_ASIC];
+        
+        if (config->SETUP_ID == 1 ){
+          for (int c = 0; c < 72; c++) lfhcal_channel_map[c] = lfhcal_channel2024_map[c];
+        } else if (config->SETUP_ID == 2){
+          for (int c = 0; c < 72; c++) lfhcal_channel_map[c] = lfhcal_channel2025_map[c];
+        } else if (config->SETUP_ID == 3){
+          for (int c = 0; c < 72; c++) lfhcal_channel_map[c] = lfhcal_channel2026SumV1_map[c];
+        } else if (config->SETUP_ID == 4){
+          for (int c = 0; c < 72; c++) lfhcal_channel_map[c] = lfhcal_channel2026SumV2_map[c];
+        } else {  
+          for (int c = 0; c < 72; c++) lfhcal_channel_map[c] = lfhcal_channel2024_map[c];
+        } 
+        
         for (int i = 0; i < config->NUM_FPGA; i++) {
             for (int j = 0; j < config->NUM_ASIC; j++) {
                 ordered_adc_canvas[i * config->NUM_ASIC + j] = canvases.new_canvas(Form("ordered_adc_fpga_%d_asic_%d", i, j), Form("ADC Spectra FPGA %d ASIC %d", i, j), 1200, 800);

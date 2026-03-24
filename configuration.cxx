@@ -34,9 +34,11 @@ void load_configs(std::string config_file, int run, int debug) {
                 } else if (key == "MACHINE_GUN_MAX_TIME") {
                     config->MACHINE_GUN_MAX_TIME = std::stoi(value);
                 } else if (key == "PACKET_SIZE") {
-                config->PACKET_SIZE = std::stoi(value);
+                    config->PACKET_SIZE = std::stoi(value);
                 } else if (key == "DETECTOR_ID") {
                     config->DETECTOR_ID = std::stoi(value);
+                } else if (key == "SETUP_ID") {
+                    config->SETUP_ID = std::stoi(value);
                 }
                 else {
                     std::cerr << "Unknown key: " << key << std::endl;
@@ -54,6 +56,7 @@ void load_configs(std::string config_file, int run, int debug) {
     std::string run_str = std::to_string(run);
     if (run_str.length() < 3) run_str = std::string(3 - run_str.length(), '0') + run_str;
     const char* data_dir_env = std::getenv("DATA_DIRECTORY");
+    std::cout << "base directory for data: " << data_dir_env << std::endl;
     std::string run_file = "Run" + run_str + ".h2g";
     if (data_dir_env && data_dir_env[0] != '\0') {
         std::string dir(data_dir_env);
@@ -173,6 +176,29 @@ void print_configs() {
             break;
     }
 
+    std::cout << "SETUP ID " << config->SETUP_ID << ": ";
+    switch (config->SETUP_ID) {
+        case 0: 
+            std::cout << "default" << std::endl;
+            break;
+        case 1: 
+            std::cout << "2024 LFHCal TB setup" << std::endl;
+            break;
+        case 2:
+            std::cout << "2025 LFHCal TB setup" << std::endl;
+            break;
+        case 3:
+            std::cout << "2026 LFHCal TB setup v1 summing board" << std::endl;
+            break;
+        case 4:
+            std::cout << "2026 LFHCal TB setup v2 summing board" << std::endl;
+            break;
+        default:
+            std::cout << "Unknown" << std::endl;
+            throw std::runtime_error("Unknown detector ID");
+            break;
+    }
+    
     std::cout << "Configuration values:" << std::endl;
     std::cout << "NUM_LINES: " << config->NUM_LINES << std::endl;
     std::cout << "NUM_FPGA: " << config->NUM_FPGA << std::endl;
