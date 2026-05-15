@@ -223,6 +223,10 @@ event_thunderdome::event_thunderdome(event_builder **b) {
 event_thunderdome::~event_thunderdome() {
 }
 
+void event_thunderdome::clear_events() {
+    built_events.clear();
+}
+
 void event_thunderdome::align_events() {
     // how many events are sitting in the buffer?
     uint32_t max_event_buffer = 0;

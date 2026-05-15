@@ -101,6 +101,7 @@ public:
     ~event_thunderdome();
 
     void align_events();
+    void clear_events();
 
     uint32_t get_num_events(){return built_events.size();}
     std::vector<kcu_event> get_event(int n) {return built_events[n];}

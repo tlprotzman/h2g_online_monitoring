@@ -682,6 +682,13 @@ online_monitor::~online_monitor() {
     server::get_instance()->get_server()->SetTerminate();
     server::get_instance()->kill_server();
     canvases.save_all(run_number, timestamp);
+    for (auto &fpga_streams : line_streams) {
+        for (auto &asic_streams : fpga_streams) {
+            for (auto *stream : asic_streams) {
+                delete stream;
+            }
+        }
+    }
     for (int i = 0; i < configuration::get_instance()->NUM_FPGA; i++) {
         builders[i]->update_stats();
     }
@@ -714,6 +721,7 @@ void online_monitor::build_events() {
     return;
     thunderdome->align_events();
     std::cout << "Built " << thunderdome->get_num_events() << " events" << std::endl;
+    thunderdome->clear_events();
 }
 
 void online_monitor::make_event_display() {

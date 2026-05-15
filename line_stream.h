@@ -22,7 +22,7 @@ private:
 
 public:
     line_stream();
-    ~line_stream() {};
+    ~line_stream();
 
     void add_line(line &l);
     void associate_channels(channel_stream_vector &channels);

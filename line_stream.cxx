@@ -16,6 +16,18 @@ line_stream::line_stream() {
     }
 }
 
+line_stream::~line_stream() {
+    if (package == nullptr) {
+        return;
+    }
+
+    auto config = configuration::get_instance();
+    for (int i = 0; i < config->NUM_LINES; i++) {
+        free(package[i]);
+    }
+    free(package);
+}
+
 void line_stream::associate_channels(channel_stream_vector &c) {
     this->channels = c;
 }
